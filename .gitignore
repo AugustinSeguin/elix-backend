@@ -1,0 +1,38 @@
+# Build directories
+ElixBackend/obj/
+ElixBackend/bin/
+
+# Logs
+*.log
+logs/
+
+# Dependency directories
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Compiled files
+*.class
+*.dll
+*.exe
+*.so
+*.dylib
+*.pyc
+*.pyo
+*.pdb
+
+# IDE-specific files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# System files
+.DS_Store
+Thumbs.db
