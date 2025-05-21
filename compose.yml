@@ -1,7 +1,6 @@
-version: "3.9"
-
 services:
   api:
+    container_name: elix_api
     build:
       context: .
       dockerfile: Dockerfile.dev
