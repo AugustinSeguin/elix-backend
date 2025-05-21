@@ -37,8 +37,7 @@ docker ps -a
 Récupérer l'id du container
 
 ```bash
-docker exec -it CONTAINER_ID /bin/sh
+docker exec -it elix_api /bin/sh
 ```
 
 [App back accessible](http://localhost:5000/swagger/index.html)
- 

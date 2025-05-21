@@ -1,6 +1,6 @@
 # Build directories
-ElixBackend/obj/
-ElixBackend/bin/
+**/obj/
+**/bin/
 
 # Logs
 *.log

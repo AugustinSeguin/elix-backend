@@ -4,10 +4,10 @@ EXPOSE 5000
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
-COPY ["ElixBackend/ElixBackend.csproj", "ElixBackend/"]
-RUN dotnet restore "ElixBackend/ElixBackend.csproj"
+COPY ["./ElixBackend.API/ElixBackend.API.csproj", "ElixBackend.API/"]
+RUN dotnet restore "ElixBackend.API/ElixBackend.API.csproj"
 COPY . .
-WORKDIR "/src/ElixBackend"
+WORKDIR "/src/ElixBackend.API"
 RUN dotnet build -c Release -o /app/build
 
 FROM build AS publish
@@ -16,4 +16,4 @@ RUN dotnet publish -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "ElixBackend.dll"]
+ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
