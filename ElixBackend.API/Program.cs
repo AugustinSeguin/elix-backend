@@ -21,26 +21,29 @@ builder.Services.AddDbContext<ElixDbContext>(options =>
 
 // configure jwt settings
 var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"];
-var key = Encoding.ASCII.GetBytes(jwtSecretKey);
+if (jwtSecretKey != null)
+{
+    var key = Encoding.ASCII.GetBytes(jwtSecretKey);
 
 // Ajouter l'authentification JWT
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false; // mettre à true en prod
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(key),
-        ValidateIssuer = false,
-        ValidateAudience = false
-    };
-});
+    builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = false; // mettre à true en prod
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ValidateIssuer = false,
+                ValidateAudience = false
+            };
+        });
+}
 
 builder.Services.AddAuthorization();
 
@@ -67,4 +70,4 @@ app.UseHttpsRedirection();
 app.UseMiddleware<JwtJtiValidationMiddleware>();
 app.MapControllers();
 
-app.Run();
+await app.RunAsync();

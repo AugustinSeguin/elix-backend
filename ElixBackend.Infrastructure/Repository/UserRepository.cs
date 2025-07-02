@@ -4,40 +4,33 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElixBackend.Infrastructure.Repository
 {
-    public class UserRepository : IUserRepository
+    public class UserRepository(ElixDbContext context) : IUserRepository
     {
-        private readonly ElixDbContext _context;
-
-        public UserRepository(ElixDbContext context)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            _context = context;
+            return await context.Users.FindAsync(id);
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByEmailAsync(string? email)
         {
-            return await _context.Users.FindAsync(id);
-        }
-
-        public async Task<User> GetUserByEmailAsync(string email)
-        {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await context.Users.ToListAsync();
         }
 
-        public async Task<User> AddUserAsync(User user)
+        public async Task<User?> AddUserAsync(User user)
         {
-            var newUser =  await _context.Users.AddAsync(user);
+            var newUser = await context.Users.AddAsync(user);
             return newUser.Entity;
         }
 
-        public async Task<User> UpdateUserAsync(User user)
+        public Task<User> UpdateUserAsync(User user)
         {
-           var userUpdated = _context.Users.Update(user);
-           return userUpdated.Entity;
+            var userUpdated = context.Users.Update(user);
+            return Task.FromResult(userUpdated.Entity);
         }
 
         public async Task DeleteUserAsync(int id)
@@ -45,18 +38,18 @@ namespace ElixBackend.Infrastructure.Repository
             var user = await GetUserByIdAsync(id);
             if (user != null)
             {
-                _context.Users.Remove(user);
+                context.Users.Remove(user);
             }
         }
 
         public async Task<bool> UserExistsAsync(int id)
         {
-            return await _context.Users.AnyAsync(u => u.Id == id);
+            return await context.Users.AnyAsync(u => u.Id == id);
         }
 
         public async Task<bool> SaveChangesAsync()
         {
-            return await _context.SaveChangesAsync() > 0;
+            return await context.SaveChangesAsync() > 0;
         }
     }
 }
