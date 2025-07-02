@@ -1,13 +1,12 @@
 using System.Security.Claims;
-using Microsoft.AspNetCore.Mvc;
-using ElixBackend.Business.IService;
-using ElixBackend.Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 using System.Text.RegularExpressions;
 using ElixBackend.API.Helpers;
 using ElixBackend.Business.DTO;
+using ElixBackend.Business.IService;
+using ElixBackend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore.Storage.Json;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using LoginRequest = ElixBackend.Business.DTO.LoginRequest;
 
@@ -47,37 +46,49 @@ namespace ElixBackend.API.Controllers
 
             var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
             var token = JwtTokenGenerator.GenerateToken(user.Id.ToString(), jwtSecretKey, out var jti);
-            
-            await _tokenService.AddTokenAsync(jti, (int)user.Id);
+
+            await _tokenService.AddTokenAsync(jti, user.Id);
 
             return Ok(new { token });
         }
 
         // POST: api/User/register
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserDTO userDTO)
+        public async Task<IActionResult> Register([FromBody] UserDTO userDto)
         {
-            var existingUser = await _userService.GetUserByEmailAsync(userDTO.Email);
+            var existingUser = await _userService.GetUserByEmailAsync(userDto.Email);
             if (existingUser != null)
             {
                 return Conflict("Un utilisateur avec cet email existe déjà.");
             }
-            
-            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$");
-            if (!passwordRegex.IsMatch(userDTO.Password))
-            {
-                return BadRequest("Le mot de passe doit contenir au minimum 8 caractères, dont une majuscule, une minuscule et un chiffre.");
-            }
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(userDTO.Password);
-            userDTO.Password = hashedPassword;
 
-            var newUser = await _userService.AddUserAsync(userDTO);
-            
+            if (userDto.Password != userDto.PasswordRepeated)
+            {
+                return BadRequest(new { message = "Les mots de passe ne correspondent pas." });
+            }
+
+            var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$");
+            if (!passwordRegex.IsMatch(userDto.Password))
+            {
+                return BadRequest(
+                    "Le mot de passe doit contenir au minimum 8 caractères, dont une majuscule, une minuscule et un chiffre.");
+            }
+
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
+            userDto.Password = hashedPassword;
+
+            var newUser = await _userService.AddUserAsync(userDto);
+
             var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
-            var token = JwtTokenGenerator.GenerateToken(newUser.Id.ToString(), jwtSecretKey, out var jti);
-            
-            await _tokenService.AddTokenAsync(jti, (int)newUser.Id);
-            
+            var token = JwtTokenGenerator.GenerateToken(newUser?.Id.ToString(), jwtSecretKey, out var jti);
+
+            if (newUser == null)
+            {
+                return Problem("Erreur rencontrée lors de la création du compte", statusCode: 500);
+            }
+
+            await _tokenService.AddTokenAsync(jti, newUser.Id);
+
             return Ok(new { token });
         }
 
@@ -91,21 +102,21 @@ namespace ElixBackend.API.Controllers
                 return Unauthorized();
 
             if (id != userIdFromToken)
-                return Forbid(); 
+                return Forbid();
 
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
                 return NotFound();
-            
+
             return Ok(user);
         }
 
         // PUT: api/User/{id}
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDTO userDTO)
+        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDTO userDto)
         {
-            if (id != userDTO.Id)
+            if (id != userDto.Id)
                 return BadRequest("L'ID dans l'URL doit correspondre à l'ID de l'utilisateur.");
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -113,13 +124,13 @@ namespace ElixBackend.API.Controllers
                 return Unauthorized();
 
             if (id != userIdFromToken)
-                return Forbid(); 
-            
+                return Forbid();
+
             var existingUser = await _userService.GetUserByIdAsync(id);
             if (existingUser == null)
                 return NotFound();
 
-            await _userService.UpdateUserAsync(userDTO);
+            await _userService.UpdateUserAsync(userDto);
             return NoContent();
         }
 
@@ -133,8 +144,8 @@ namespace ElixBackend.API.Controllers
                 return Unauthorized();
 
             if (id != userIdFromToken)
-                return Forbid(); 
-            
+                return Forbid();
+
             var existingUser = await _userService.GetUserByIdAsync(id);
             if (existingUser == null)
                 return NotFound();
@@ -142,7 +153,7 @@ namespace ElixBackend.API.Controllers
             await _userService.DeleteUserAsync(id);
             return NoContent();
         }
-        
+
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout()
@@ -150,7 +161,7 @@ namespace ElixBackend.API.Controllers
             var jti = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            await _tokenService.RemoveTokenAsync(jti, userId);
+            if (jti != null) await _tokenService.RemoveTokenAsync(jti, userId);
 
             return Ok("Logged out.");
         }

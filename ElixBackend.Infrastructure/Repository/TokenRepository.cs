@@ -4,15 +4,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ElixBackend.Infrastructure.Repository;
 
-public class TokenRepository : ITokenRepository
+public class TokenRepository(ElixDbContext context) : ITokenRepository
 {
-    private readonly ElixDbContext _context;
-
-    public TokenRepository(ElixDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<UserToken> AddTokenAsync(string jti, int userId)
     {
         var userToken = new UserToken
@@ -21,25 +14,26 @@ public class TokenRepository : ITokenRepository
             Jti = jti,
             ExpirationDate = DateTime.UtcNow.AddHours(2)
         };
-        await _context.UserTokens.AddAsync(userToken);
-        await _context.SaveChangesAsync();
+        await context.UserTokens.AddAsync(userToken);
+        await context.SaveChangesAsync();
         return userToken;
     }
 
     public async Task RemoveTokenAsync(string jti, int userId)
     {
-        var token = await _context.UserTokens
+        var token = await context.UserTokens
             .FirstOrDefaultAsync(t => t.Jti == jti && t.UserId == userId);
 
         if (token != null)
         {
-            _context.UserTokens.Remove(token);
-            await _context.SaveChangesAsync();
+            context.UserTokens.Remove(token);
+            await context.SaveChangesAsync();
         }
     }
-    
+
     public async Task<bool> TokenExistsAsync(string jti, int userId, DateTime dateNow)
     {
-        return await _context.UserTokens.AnyAsync(t => t.Jti == jti && t.UserId == userId && t.ExpirationDate >= dateNow);
+        return await context.UserTokens.AnyAsync(t =>
+            t.Jti == jti && t.UserId == userId && t.ExpirationDate >= dateNow);
     }
 }

@@ -5,50 +5,43 @@ using ElixBackend.Infrastructure.IRepository;
 
 namespace ElixBackend.Business.Service
 {
-    public class UserService : IUserService
+    public class UserService(IUserRepository userRepository) : IUserService
     {
-        private readonly IUserRepository _userRepository;
-
-        public UserService(IUserRepository userRepository)
+        public async Task<User?> GetUserByIdAsync(int id)
         {
-            _userRepository = userRepository;
+            return await userRepository.GetUserByIdAsync(id);
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await _userRepository.GetUserByIdAsync(id);
-        }
-
-        public async Task<User> GetUserByEmailAsync(string email)
-        {
-            return await _userRepository.GetUserByEmailAsync(email);
+            return await userRepository.GetUserByEmailAsync(email);
         }
 
         public async Task<IEnumerable<User>> GetAllUsersAsync()
         {
-            return await _userRepository.GetAllUsersAsync();
+            return await userRepository.GetAllUsersAsync();
         }
 
-        public async Task<User> AddUserAsync(UserDTO userDto)
+        public async Task<User?> AddUserAsync(UserDTO userDto)
         {
             var user = userDto.UserDtoToUser(userDto);
-            var newUser = await _userRepository.AddUserAsync(user);
-            await _userRepository.SaveChangesAsync();
+            var newUser = await userRepository.AddUserAsync(user);
+            await userRepository.SaveChangesAsync();
             return newUser;
         }
 
-        public async Task<User> UpdateUserAsync(UserDTO userDto)
+        public async Task<User?> UpdateUserAsync(UserDTO userDto)
         {
             var user = userDto.UserDtoToUser(userDto);
-            var userUpdated = await _userRepository.UpdateUserAsync(user);
-            await _userRepository.SaveChangesAsync();
+            var userUpdated = await userRepository.UpdateUserAsync(user);
+            await userRepository.SaveChangesAsync();
             return userUpdated;
         }
 
         public async Task DeleteUserAsync(int id)
         {
-            await _userRepository.DeleteUserAsync(id);
-            await _userRepository.SaveChangesAsync();
+            await userRepository.DeleteUserAsync(id);
+            await userRepository.SaveChangesAsync();
         }
     }
 }

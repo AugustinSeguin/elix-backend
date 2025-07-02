@@ -4,15 +4,8 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace ElixAPI.Middlewares;
 
-public class JwtJtiValidationMiddleware
+public class JwtJtiValidationMiddleware(RequestDelegate next)
 {
-    private readonly RequestDelegate _next;
-
-    public JwtJtiValidationMiddleware(RequestDelegate next)
-    {
-        _next = next;
-    }
-
     public async Task Invoke(HttpContext context, IServiceScopeFactory scopeFactory)
     {
         if (context.User.Identity?.IsAuthenticated ?? false)
@@ -41,6 +34,6 @@ public class JwtJtiValidationMiddleware
             }
         }
 
-        await _next(context);
+        await next(context);
     }
 }
