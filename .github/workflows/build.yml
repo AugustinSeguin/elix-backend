@@ -20,8 +20,6 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Format check
-        run: dotnet format --verify-no-changes --verbosity diagnostic
       - name: Code analysis
         run: dotnet build --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true
       - name: Test

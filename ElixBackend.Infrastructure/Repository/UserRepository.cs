@@ -11,7 +11,7 @@ namespace ElixBackend.Infrastructure.Repository
             return await context.Users.FindAsync(id);
         }
 
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string? email)
         {
             return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
@@ -27,10 +27,10 @@ namespace ElixBackend.Infrastructure.Repository
             return newUser.Entity;
         }
 
-        public async Task<User?> UpdateUserAsync(User user)
+        public Task<User> UpdateUserAsync(User user)
         {
             var userUpdated = context.Users.Update(user);
-            return userUpdated.Entity;
+            return Task.FromResult(userUpdated.Entity);
         }
 
         public async Task DeleteUserAsync(int id)

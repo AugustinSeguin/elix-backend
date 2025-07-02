@@ -54,7 +54,7 @@ namespace ElixBackend.API.Controllers
 
         // POST: api/User/register
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] UserDTO userDto)
+        public async Task<IActionResult> Register([FromBody] UserDto userDto)
         {
             var existingUser = await _userService.GetUserByEmailAsync(userDto.Email);
             if (existingUser != null)
@@ -114,7 +114,7 @@ namespace ElixBackend.API.Controllers
         // PUT: api/User/{id}
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDTO userDto)
+        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDto userDto)
         {
             if (id != userDto.Id)
                 return BadRequest("L'ID dans l'URL doit correspondre à l'ID de l'utilisateur.");

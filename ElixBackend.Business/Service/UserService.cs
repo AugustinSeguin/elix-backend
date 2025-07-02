@@ -12,7 +12,7 @@ namespace ElixBackend.Business.Service
             return await userRepository.GetUserByIdAsync(id);
         }
 
-        public async Task<User?> GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string? email)
         {
             return await userRepository.GetUserByEmailAsync(email);
         }
@@ -22,7 +22,7 @@ namespace ElixBackend.Business.Service
             return await userRepository.GetAllUsersAsync();
         }
 
-        public async Task<User?> AddUserAsync(UserDTO userDto)
+        public async Task<User?> AddUserAsync(UserDto userDto)
         {
             var user = userDto.UserDtoToUser(userDto);
             var newUser = await userRepository.AddUserAsync(user);
@@ -30,7 +30,7 @@ namespace ElixBackend.Business.Service
             return newUser;
         }
 
-        public async Task<User?> UpdateUserAsync(UserDTO userDto)
+        public async Task<User?> UpdateUserAsync(UserDto userDto)
         {
             var user = userDto.UserDtoToUser(userDto);
             var userUpdated = await userRepository.UpdateUserAsync(user);
