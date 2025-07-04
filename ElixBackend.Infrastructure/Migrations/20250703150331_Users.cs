@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ElixBackend.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitUser : Migration
+    public partial class Users : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,11 +21,13 @@ namespace ElixBackend.Infrastructure.Migrations
                     Username = table.Column<string>(type: "text", nullable: true),
                     Firstname = table.Column<string>(type: "text", nullable: false),
                     Lastname = table.Column<string>(type: "text", nullable: false),
-                    Email = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: true),
                     PasswordHash = table.Column<string>(type: "text", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Gender = table.Column<string>(type: "text", nullable: true),
-                    IsPremium = table.Column<bool>(type: "boolean", nullable: false)
+                    IsPremium = table.Column<bool>(type: "boolean", nullable: false),
+                    PhoneNumber = table.Column<int>(type: "integer", nullable: true),
+                    IsAdmin = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -17,7 +17,7 @@ namespace ElixBackend.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.5")
+                .HasAnnotation("ProductVersion", "9.0.6")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -34,7 +34,6 @@ namespace ElixBackend.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Firstname")
@@ -43,6 +42,9 @@ namespace ElixBackend.Infrastructure.Migrations
 
                     b.Property<string>("Gender")
                         .HasColumnType("text");
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsPremium")
                         .HasColumnType("boolean");
@@ -54,6 +56,9 @@ namespace ElixBackend.Infrastructure.Migrations
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("PhoneNumber")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Username")
                         .HasColumnType("text");

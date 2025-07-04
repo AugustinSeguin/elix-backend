@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>0503d8e2-67a8-45bf-84a4-eb624917c29e</UserSecretsId>
+        <AssemblyName>ElixBackend.WebApp</AssemblyName>
+        <RootNamespace>ElixBackend.WebApp</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.12.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ElixBackend.Business\ElixBackend.Business.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Views\Shared\_ValidationScriptsPartial.cshtml" />
+      <_ContentIncludedByDefault Remove="Views\User\Login.cshtml" />
+    </ItemGroup>
+
+</Project>
