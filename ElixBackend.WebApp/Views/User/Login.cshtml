@@ -21,18 +21,19 @@
                 <h4 class="mb-0">Connexion</h4>
             </div>
             <div class="card-body">
-                <form asp-controller="User" asp-action="Login" method="post">
+                <form asp-action="Login" asp-controller="User" method="post">
                     @Html.AntiForgeryToken()
+
                     <div class="mb-3">
-                        <label asp-for="Email" class="form-label">Email</label>
-                        <input asp-for="Email" class="form-control"/>
-                        <span asp-validation-for="Email" class="text-danger"></span>
+                        <label asp-for="LoginRequest.Email" class="form-label"></label>
+                        <input asp-for="LoginRequest.Email" class="form-control"/>
+                        <span asp-validation-for="LoginRequest.Email" class="text-danger"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label asp-for="Password" class="form-label">Mot de passe</label>
-                        <input asp-for="Password" type="password" class="form-control"/>
-                        <span asp-validation-for="Password" class="text-danger"></span>
+                        <label asp-for="LoginRequest.Password" class="form-label"></label>
+                        <input asp-for="LoginRequest.Password" class="form-control" type="password"/>
+                        <span asp-validation-for="LoginRequest.Password" class="text-danger"></span>
                     </div>
 
                     <div class="d-grid">

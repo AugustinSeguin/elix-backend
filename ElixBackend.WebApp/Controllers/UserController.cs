@@ -25,7 +25,7 @@ public class UserController(
     [HttpPost("login")]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login([FromForm] LoginRequest loginRequest)
+    public async Task<IActionResult> Login(LoginRequest loginRequest)
     {
         if (!ModelState.IsValid)
         {
