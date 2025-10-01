@@ -1,20 +1,5 @@
 services:
-  api:
-    container_name: elix_api
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    ports:
-      - "5000:80"
-    volumes:
-      - .:/app
-    working_dir: /app/ElixBackend.API
-    environment:
-      DOTNET_ENVIRONMENT: Development
-    depends_on:
-      - db
-
-  db:
+  elix_db:
     image: postgres:latest
     container_name: elix_postgres
     restart: always
