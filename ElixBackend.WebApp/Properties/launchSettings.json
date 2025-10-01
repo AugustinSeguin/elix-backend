@@ -4,19 +4,19 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:58544",
+      "applicationUrl": "http://localhost:5059",
       "sslPort": 44378
     }
   },
   "profiles": {
-    "WebApp": {
+    "ElixBackend.WebApp": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "http://localhost:6060/user/login",
-      "applicationUrl": "https://localhost:7095;http://localhost:6060",
+      "launchUrl": "user/login",
+      "applicationUrl": "http://localhost:5059",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Local"
       }
     }
   }

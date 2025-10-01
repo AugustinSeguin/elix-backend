@@ -14,33 +14,21 @@
     </div>
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-header text-center bg-primary text-white">
-                <h4 class="mb-0">Connexion</h4>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="User" asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label for="Email">Email</label>
+                <input type="email" id="Email" name="Email" class="form-control" /> <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="card-body">
-                <form asp-action="Login" asp-controller="User" method="post">
-                    @Html.AntiForgeryToken()
-
-                    <div class="mb-3">
-                        <label asp-for="LoginRequest.Email" class="form-label"></label>
-                        <input asp-for="LoginRequest.Email" class="form-control"/>
-                        <span asp-validation-for="LoginRequest.Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="LoginRequest.Password" class="form-label"></label>
-                        <input asp-for="LoginRequest.Password" class="form-control" type="password"/>
-                        <span asp-validation-for="LoginRequest.Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Se connecter</button>
-                    </div>
-                </form>
+            <div class="form-group">
+                <label for="Password">Mot de passe</label>
+                <input type="password" id="Password" name="Password" class="form-control"/> <span
+                    asp-validation-for="Password" class="text-danger"></span>
             </div>
-        </div>
+            <button type="submit" class="btn btn-primary">Se connecter</button>
+        </form>
     </div>
 </div>

@@ -4,10 +4,14 @@ namespace ElixBackend.Business.DTO
 {
     public class LoginRequest
     {
-        [Required(ErrorMessage = "L'email est requis")]
-        public string Email { get; set; } = string.Empty;
+        [Required(ErrorMessage = "L'adresse e-mail est requise.")]
+        [EmailAddress(ErrorMessage = "Le format de l'e-mail n'est pas valide.")]
+        [Display(Name = "Adresse e-mail")]
+        public string Email { get; set; }
 
-        [Required(ErrorMessage = "Le mot de passe est requis")]
-        public string Password { get; set; } = string.Empty;
+        [Required(ErrorMessage = "Le mot de passe est requis.")]
+        [DataType(DataType.Password)]
+        [Display(Name = "Mot de passe")]
+        public string Password { get; set; }
     }
 }

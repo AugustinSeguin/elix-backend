@@ -15,24 +15,18 @@ public class UserController(
     ITokenService tokenService)
     : Controller
 {
-    [HttpGet("login")]
+    [HttpGet("[action]")] 
     [AllowAnonymous]
     public IActionResult Login()
     {
         return View();
     }
 
-    [HttpPost("login")]
+    [HttpPost("[action]")] 
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(LoginRequest loginRequest)
+    public async Task<IActionResult> Login([FromForm] LoginRequest loginRequest) 
     {
-        if (!ModelState.IsValid)
-        {
-            ModelState.AddModelError(string.Empty, "Email ou mot de passe invalide.");
-            return View(loginRequest);
-        }
-
         try
         {
             var user = await userService.GetUserByEmailAsync(loginRequest.Email);
