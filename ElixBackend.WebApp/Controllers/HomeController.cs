@@ -2,12 +2,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElixBackend.WebApp.Controllers;
-
+    
+[Authorize]
 [Route("[controller]")]
 public class HomeController : Controller
 {
-    [HttpGet("index")]
-    [AllowAnonymous]
+    [HttpGet("[action]")] 
     public IActionResult Index()
     {
         return View();
