@@ -14,23 +14,13 @@ namespace ElixBackend.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(IUserService userService, IConfiguration configuration, ITokenService tokenService)
+        : ControllerBase
     {
-        private readonly IUserService _userService;
-        private readonly ITokenService _tokenService;
-        private readonly IConfiguration _configuration;
-
-        public UserController(IUserService userService, IConfiguration configuration, ITokenService tokenService)
-        {
-            _userService = userService;
-            _tokenService = tokenService;
-            _configuration = configuration;
-        }
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            var user = await _userService.GetUserByEmailAsync(loginRequest.Email);
+            var user = await userService.GetUserByEmailAsync(loginRequest.Email);
             if (user == null)
             {
                 return Unauthorized("Email ou mot de passe invalide.");
@@ -44,10 +34,10 @@ namespace ElixBackend.API.Controllers
                 return Unauthorized("Email ou mot de passe invalide.");
             }
 
-            var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
+            var jwtSecretKey = configuration["JwtSettings:SecretKey"];
             var token = JwtTokenGenerator.GenerateToken(user.Id.ToString(), jwtSecretKey, out var jti);
 
-            await _tokenService.AddTokenAsync(jti, user.Id);
+            await tokenService.AddTokenAsync(jti, user.Id);
 
             return Ok(new { token });
         }
@@ -56,7 +46,7 @@ namespace ElixBackend.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] UserDto userDto)
         {
-            var existingUser = await _userService.GetUserByEmailAsync(userDto.Email);
+            var existingUser = await userService.GetUserByEmailAsync(userDto.Email);
             if (existingUser != null)
             {
                 return Conflict("Un utilisateur avec cet email existe déjà.");
@@ -77,9 +67,9 @@ namespace ElixBackend.API.Controllers
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
             userDto.Password = hashedPassword;
 
-            var newUser = await _userService.AddUserAsync(userDto);
+            var newUser = await userService.AddUserAsync(userDto);
 
-            var jwtSecretKey = _configuration["JwtSettings:SecretKey"];
+            var jwtSecretKey = configuration["JwtSettings:SecretKey"];
             var token = JwtTokenGenerator.GenerateToken(newUser?.Id.ToString(), jwtSecretKey, out var jti);
 
             if (newUser == null)
@@ -87,7 +77,7 @@ namespace ElixBackend.API.Controllers
                 return Problem("Erreur rencontrée lors de la création du compte", statusCode: 500);
             }
 
-            await _tokenService.AddTokenAsync(jti, newUser.Id);
+            await tokenService.AddTokenAsync(jti, newUser.Id);
 
             return Ok(new { token });
         }
@@ -104,7 +94,7 @@ namespace ElixBackend.API.Controllers
             if (id != userIdFromToken)
                 return Forbid();
 
-            var user = await _userService.GetUserByIdAsync(id);
+            var user = await userService.GetUserByIdAsync(id);
             if (user == null)
                 return NotFound();
 
@@ -126,11 +116,11 @@ namespace ElixBackend.API.Controllers
             if (id != userIdFromToken)
                 return Forbid();
 
-            var existingUser = await _userService.GetUserByIdAsync(id);
+            var existingUser = await userService.GetUserByIdAsync(id);
             if (existingUser == null)
                 return NotFound();
 
-            await _userService.UpdateUserAsync(userDto);
+            await userService.UpdateUserAsync(userDto);
             return NoContent();
         }
 
@@ -146,11 +136,11 @@ namespace ElixBackend.API.Controllers
             if (id != userIdFromToken)
                 return Forbid();
 
-            var existingUser = await _userService.GetUserByIdAsync(id);
+            var existingUser = await userService.GetUserByIdAsync(id);
             if (existingUser == null)
                 return NotFound();
 
-            await _userService.DeleteUserAsync(id);
+            await userService.DeleteUserAsync(id);
             return NoContent();
         }
 
@@ -161,7 +151,7 @@ namespace ElixBackend.API.Controllers
             var jti = User.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
-            if (jti != null) await _tokenService.RemoveTokenAsync(jti, userId);
+            if (jti != null) await tokenService.RemoveTokenAsync(jti, userId);
 
             return Ok("Logged out.");
         }

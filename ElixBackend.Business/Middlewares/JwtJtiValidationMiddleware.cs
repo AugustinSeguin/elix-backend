@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using ElixBackend.Business.IService;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace ElixAPI.Middlewares;
@@ -20,7 +22,6 @@ public class JwtJtiValidationMiddleware(RequestDelegate next)
                 return;
             }
 
-            // Créer un scope pour les services scoped
             using var scope = scopeFactory.CreateScope();
             var tokenService = scope.ServiceProvider.GetRequiredService<ITokenService>();
 

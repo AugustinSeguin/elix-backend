@@ -16,6 +16,8 @@ namespace ElixBackend.Business.DTO
         public DateTime? Birthdate { get; set; }
         public Gender? Gender { get; set; }
         public bool IsPremium { get; set; } = false;
+        public int? PhoneNumber { get; set; }
+        public bool IsAdmin { get; set; } = false;
 
         public User UserDtoToUser(UserDto userDto)
         {
@@ -29,7 +31,9 @@ namespace ElixBackend.Business.DTO
                 Lastname = userDto.Lastname,
                 Gender = userDto.Gender,
                 IsPremium = userDto.IsPremium,
-                PasswordHash = userDto.Password
+                PasswordHash = userDto.Password,
+                PhoneNumber = userDto.PhoneNumber,
+                IsAdmin = userDto.IsAdmin
             };
         }
 
