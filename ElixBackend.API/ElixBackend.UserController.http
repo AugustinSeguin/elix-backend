@@ -1,0 +1,73 @@
+@ElixBackend_HostAddress = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzIiwianRpIjoiOTIwZTA5YTAtMWI1Zi00OWNjLTg3ZjAtNGFkZmQ5NTBlNjhkIiwibmJmIjoxNzU5MzI1Nzk1LCJleHAiOjE3NTkzMzI5OTUsImlhdCI6MTc1OTMyNTc5NX0.wZ5xwGLJVv4zwhReKFJpErMRMkv23HxjCAgeOAUV6a0
+
+### LOGIN
+POST {{ElixBackend_HostAddress}}/api/User/login
+Content-Type: application/json
+
+{
+  "email": "user1@email.com",
+  "password": "MotDePasse123"
+}
+
+###
+
+### REGISTER
+POST {{ElixBackend_HostAddress}}/api/User/register
+Content-Type: application/json
+
+{
+  "email": "user1@email.com",
+  "password": "MotDePasse123",
+  "passwordRepeated": "MotDePasse123",
+  "firstname": "John",
+  "lastname": "Doe",
+  "username": "johndoe1",
+  "birthdate": "2000-01-01T00:00:00",
+  "gender": 0,
+  "isPremium": false,
+  "phoneNumber": 123456789,
+  "isAdmin": true
+}
+
+###
+
+### GET USER BY ID (auth)
+GET {{ElixBackend_HostAddress}}/api/User/2
+Authorization: Bearer {{token}}
+
+###
+
+### UPDATE USER (auth)
+PUT {{ElixBackend_HostAddress}}/api/User/2
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 2,
+  "email": "user@email.com",
+  "password": "MotDePasse123",
+  "passwordRepeated": "MotDePasse123",
+  "firstname": "John",
+  "lastname": "Doe",
+  "username": "johndoe",
+  "birthdate": "2000-01-01T00:00:00",
+  "gender": 0,
+  "isPremium": false,
+  "phoneNumber": 123456789,
+  "isAdmin": false
+}
+
+###
+
+### DELETE USER (auth)
+DELETE {{ElixBackend_HostAddress}}/api/User/2
+Authorization: Bearer {{token}}
+
+###
+
+### LOGOUT (auth)
+POST {{ElixBackend_HostAddress}}/api/User/logout
+Authorization: Bearer {{token}}
+
+###

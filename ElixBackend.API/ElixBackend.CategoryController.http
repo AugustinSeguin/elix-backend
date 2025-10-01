@@ -1,0 +1,45 @@
+@ElixBackend_HostAddress = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0Iiwicm9sZSI6ImFkbWluIiwianRpIjoiN2FiOTE1MjctZjkzOS00ZWMzLWE5MTMtZDBjZmJlZTNlZTIxIiwibmJmIjoxNzU5MzMwMTMzLCJleHAiOjE3NTkzMzczMzMsImlhdCI6MTc1OTMzMDEzM30.OY2--6cjuDFej28wgN3bNGPbpAEG2VmfhJ5HbQDOWAQ
+
+### GET ALL CATEGORIES (auth)
+GET {{ElixBackend_HostAddress}}/api/Category
+Authorization: Bearer {{token}}
+
+###
+
+### GET CATEGORY BY ID (auth)
+GET {{ElixBackend_HostAddress}}/api/Category/1
+Authorization: Bearer {{token}}
+
+###
+
+### CREATE CATEGORY (auth)
+POST {{ElixBackend_HostAddress}}/api/Category
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Nouvelle catégorie",
+  "description": "Description de la catégorie"
+}
+
+###
+
+### UPDATE CATEGORY (auth)
+PUT {{ElixBackend_HostAddress}}/api/Category/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "title": "Catégorie modifiée",
+  "description": "Nouvelle description"
+}
+
+###
+
+### DELETE CATEGORY (auth)
+DELETE {{ElixBackend_HostAddress}}/api/Category/1
+Authorization: Bearer {{token}}
+
+###

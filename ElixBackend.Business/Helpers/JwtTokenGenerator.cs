@@ -40,7 +40,7 @@ namespace ElixBackend.API.Helpers
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(secretKey);
 
-            jti = Guid.NewGuid().ToString(); // générer le jti
+            jti = Guid.NewGuid().ToString();
             
             var claims = new List<Claim>
             {
