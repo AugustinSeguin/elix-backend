@@ -23,14 +23,27 @@ namespace ElixBackend.Infrastructure.Repository
 
         public async Task<User?> AddUserAsync(User user)
         {
+            if (user.BirthDate != null)
+            {
+                user.BirthDate = DateTime.SpecifyKind((DateTime)user.BirthDate, DateTimeKind.Utc);
+            }
             var newUser = await context.Users.AddAsync(user);
             return newUser.Entity;
         }
 
-        public Task<User> UpdateUserAsync(User user)
+        public async Task<User> UpdateUserAsync(User user)
         {
-            var userUpdated = context.Users.Update(user);
-            return Task.FromResult(userUpdated.Entity);
+            var tracked = await context.Users.FindAsync(user.Id);
+            if (tracked != null)
+            {
+                context.Entry(tracked).CurrentValues.SetValues(user);
+                return tracked;
+            }
+            else
+            {
+                var entry = context.Users.Update(user);
+                return entry.Entity;
+            }
         }
 
         public async Task DeleteUserAsync(int id)

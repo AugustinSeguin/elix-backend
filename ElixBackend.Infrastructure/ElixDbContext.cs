@@ -1,22 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ElixBackend.Domain.Entities;
 
-namespace ElixBackend.Infrastructure
+namespace ElixBackend.Infrastructure;
+
+public class ElixDbContext(DbContextOptions<ElixDbContext> options) : DbContext(options)
 {
-    public class ElixDbContext : DbContext
-    {
-        public ElixDbContext(DbContextOptions<ElixDbContext> options) : base(options) {}
-
-        public DbSet<User> Users { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Category> Categories { get; set; }
         
-        public DbSet<UserToken> UserTokens { get; set; }
+    public DbSet<UserToken> UserTokens { get; set; }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<User>()
-                .Property(u => u.Gender)
-                .HasConversion<string>();
-        }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.Entity<User>()
+            .Property(u => u.Gender)
+            .HasConversion<string>();
     }
 }

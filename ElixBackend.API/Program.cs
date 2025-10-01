@@ -24,7 +24,6 @@ if (jwtSecretKey != null)
 {
     var key = Encoding.ASCII.GetBytes(jwtSecretKey);
 
-// Ajouter l'authentification JWT
     builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -32,7 +31,7 @@ if (jwtSecretKey != null)
         })
         .AddJwtBearer(options =>
         {
-            options.RequireHttpsMetadata = false; // mettre à true en prod
+            options.RequireHttpsMetadata = builder.Configuration.GetValue<bool>("JwtSettings:RequireHttpsMetadata");
             options.SaveToken = true;
             options.TokenValidationParameters = new TokenValidationParameters
             {
@@ -49,10 +48,12 @@ builder.Services.AddAuthorization();
 // scoped repository
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 // scoped service
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 

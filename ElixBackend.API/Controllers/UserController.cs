@@ -33,9 +33,16 @@ namespace ElixBackend.API.Controllers
             {
                 return Unauthorized("Email ou mot de passe invalide.");
             }
-
+            string token;
+            string jti;
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];
-            var token = JwtTokenGenerator.GenerateToken(user.Id.ToString(), jwtSecretKey, out var jti);
+            if(user.IsAdmin)
+            { 
+                token = JwtTokenGenerator.GenerateAdminToken(user.Id, jwtSecretKey, out jti);
+                await tokenService.AddTokenAsync(jti, user.Id);
+                return Ok(new { token });
+            }
+            token = JwtTokenGenerator.GenerateToken(user.Id.ToString(), jwtSecretKey, out jti);
 
             await tokenService.AddTokenAsync(jti, user.Id);
 
@@ -64,8 +71,8 @@ namespace ElixBackend.API.Controllers
                     "Le mot de passe doit contenir au minimum 8 caractères, dont une majuscule, une minuscule et un chiffre.");
             }
 
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(userDto.Password);
-            userDto.Password = hashedPassword;
+            var passwordHasher = new PasswordHasher<User>();
+            userDto.Password = passwordHasher.HashPassword(null, userDto.Password);
 
             var newUser = await userService.AddUserAsync(userDto);
 
@@ -120,8 +127,8 @@ namespace ElixBackend.API.Controllers
             if (existingUser == null)
                 return NotFound();
 
-            await userService.UpdateUserAsync(userDto);
-            return NoContent();
+            var user = await userService.UpdateUserAsync(userDto);
+            return Ok(user);
         }
 
         // DELETE: api/User/{id}
