@@ -28,13 +28,10 @@ public class QuestionRepository(ElixDbContext context) : IQuestionRepository
         return Task.FromResult(entry.Entity);
     }
 
-    public async Task DeleteQuestionAsync(int id)
+    public Task DeleteQuestionAsync(int id)
     {
-        var question = await context.Questions.FindAsync(id);
-        if (question != null)
-        {
-            context.Questions.Remove(question);
-        }
+        context.Questions.Remove(new Question { Id = id });
+        return Task.CompletedTask;
     }
 
     public async Task<bool> SaveChangesAsync()
