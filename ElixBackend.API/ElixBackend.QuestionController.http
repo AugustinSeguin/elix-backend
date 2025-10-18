@@ -1,0 +1,43 @@
+# Requêtes pour tester les routes de QuestionController
+# Variables :
+# - Remplace {{baseUrl}} par l'URL où ton API tourne (ex: http://localhost:5000 ou https://localhost:5001)
+# - Remplace {{jwt}} par un token JWT valide (les routes POST/PUT/DELETE nécessitent le rôle admin)
+
+@baseUrl = http://localhost:5000
+
+### Get all questions
+GET {{baseUrl}}/api/Question
+Authorization: Bearer {{jwt}}
+Accept: application/json
+
+### Get question by id
+GET {{baseUrl}}/api/Question/1
+Authorization: Bearer {{jwt}}
+Accept: application/json
+
+### Create a question (admin)
+POST {{baseUrl}}/api/Question
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "title": "Exemple de question",
+  "categoryId": 1,
+  "mediaPath": "/media/example.png"
+}
+
+### Update a question (admin)
+PUT {{baseUrl}}/api/Question/1
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "id": 1,
+  "title": "Question mise à jour",
+  "categoryId": 1,
+  "mediaPath": "/media/updated.png"
+}
+
+### Delete a question (admin)
+DELETE {{baseUrl}}/api/Question/1
+Authorization: Bearer {{jwt}}

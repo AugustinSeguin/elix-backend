@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ElixBackend.Business.DTO
 {
-    public class LoginRequest
+    public class LoginRequestDto
     {
         [Required(ErrorMessage = "L'adresse e-mail est requise.")]
         [EmailAddress(ErrorMessage = "Le format de l'e-mail n'est pas valide.")]
