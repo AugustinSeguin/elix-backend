@@ -19,7 +19,7 @@ public class QuestionRepositoryTest
     public void SetUp()
     {
         var options = new DbContextOptionsBuilder<ElixDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .UseInMemoryDatabase(databaseName: TestContext.CurrentContext.Test.Name)
             .Options;
         _context = new ElixDbContext(options);
         _repository = new QuestionRepository(_context);
