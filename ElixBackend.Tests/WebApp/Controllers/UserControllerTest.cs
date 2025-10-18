@@ -46,7 +46,7 @@ public class UserControllerTest
     public async Task Login_Post_InvalidUser_ReturnsViewWithError()
     {
         var controller = CreateController();
-        var loginRequest = new LoginRequest { Email = "test@test.com", Password = "wrong" };
+        var loginRequest = new LoginRequestDto { Email = "test@test.com", Password = "wrong" };
         _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((User?)null);
 
         var result = await controller.Login(loginRequest);
@@ -59,7 +59,7 @@ public class UserControllerTest
     public async Task Login_Post_InvalidPassword_ReturnsViewWithError()
     {
         var controller = CreateController();
-        var loginRequest = new LoginRequest { Email = "test@test.com", Password = "wrong" };
+        var loginRequest = new LoginRequestDto { Email = "test@test.com", Password = "wrong" };
         var user = new User
         {
             Id = 1,

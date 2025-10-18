@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
-using LoginRequest = ElixBackend.Business.DTO.LoginRequest;
 
 namespace ElixBackend.API.Controllers
 {
@@ -18,16 +17,16 @@ namespace ElixBackend.API.Controllers
         : ControllerBase
     {
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
+        public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
         {
-            var user = await userService.GetUserByEmailAsync(loginRequest.Email);
+            var user = await userService.GetUserByEmailAsync(loginRequestDto.Email);
             if (user == null)
             {
                 return Unauthorized("Email ou mot de passe invalide.");
             }
 
             var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginRequest.Password);
+            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginRequestDto.Password);
 
             if (result == PasswordVerificationResult.Failed)
             {

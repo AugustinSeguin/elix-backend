@@ -25,24 +25,24 @@ public class UserController(
     [HttpPost("[action]")] 
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login([FromForm] LoginRequest loginRequest) 
+    public async Task<IActionResult> Login([FromForm] LoginRequestDto loginRequestDto) 
     {
         try
         {
-            var user = await userService.GetUserByEmailAsync(loginRequest.Email);
+            var user = await userService.GetUserByEmailAsync(loginRequestDto.Email);
             if (user == null)
             {
                 ModelState.AddModelError(string.Empty, "Email ou mot de passe invalide.");
-                return View(loginRequest);
+                return View(loginRequestDto);
             }
 
             var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginRequest.Password);
+            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginRequestDto.Password);
 
             if (result == PasswordVerificationResult.Failed)
             {
                 ModelState.AddModelError(string.Empty, "Email ou mot de passe invalide.");
-                return View(loginRequest);
+                return View(loginRequestDto);
             }
 
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];
@@ -55,7 +55,7 @@ public class UserController(
         catch (Exception)
         {
             ModelState.AddModelError(string.Empty, "Email ou mot de passe invalide.");
-            return View(loginRequest);
+            return View(loginRequestDto);
         }
     }
 }
