@@ -7,7 +7,8 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
-namespace ElixBackend.Tests.APi.Controllers;
+namespace ElixBackend.Tests.API.Controllers;
+
 
 [TestFixture]
 public class UserControllerTest

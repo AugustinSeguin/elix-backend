@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 
-namespace ElixBackend.Tests.APi.Controllers;
+namespace ElixBackend.Tests.API.Controllers;
+
 
 [TestFixture]
 public class AnswerControllerTest

@@ -70,7 +70,7 @@ namespace ElixBackend.API.Controllers
                     "Le mot de passe doit contenir au minimum 8 caractères, dont une majuscule, une minuscule et un chiffre.");
             }
 
-            var passwordHasher = new PasswordHasher<User>();
+            var passwordHasher = new PasswordHasher<User?>();
             userDto.Password = passwordHasher.HashPassword(null, userDto.Password);
 
             var newUser = await userService.AddUserAsync(userDto);
