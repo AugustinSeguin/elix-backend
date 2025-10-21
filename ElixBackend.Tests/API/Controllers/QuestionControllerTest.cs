@@ -4,7 +4,8 @@ using ElixBackend.Business.IService;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
-namespace ElixBackend.Tests.APi.Controllers;
+namespace ElixBackend.Tests.API.Controllers;
+
 
 [TestFixture]
 public class QuestionControllerTest
