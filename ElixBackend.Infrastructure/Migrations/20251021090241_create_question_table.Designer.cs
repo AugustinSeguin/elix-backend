@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ElixBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(ElixDbContext))]
-    [Migration("20251018110335_create_question_table")]
+    [Migration("20251021090241_create_question_table")]
     partial class create_question_table
     {
         /// <inheritdoc />
@@ -24,6 +24,34 @@ namespace ElixBackend.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("ElixBackend.Domain.Entities.Answer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Explanation")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsValid")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("Answers");
+                });
 
             modelBuilder.Entity("ElixBackend.Domain.Entities.Category", b =>
                 {
@@ -53,9 +81,6 @@ namespace ElixBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("MediaPath")
                         .HasColumnType("text");
 
@@ -64,8 +89,6 @@ namespace ElixBackend.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Questions");
                 });
@@ -141,15 +164,15 @@ namespace ElixBackend.Infrastructure.Migrations
                     b.ToTable("UserTokens");
                 });
 
-            modelBuilder.Entity("ElixBackend.Domain.Entities.Question", b =>
+            modelBuilder.Entity("ElixBackend.Domain.Entities.Answer", b =>
                 {
-                    b.HasOne("ElixBackend.Domain.Entities.Category", "Category")
+                    b.HasOne("ElixBackend.Domain.Entities.Question", "Question")
                         .WithMany()
-                        .HasForeignKey("CategoryId")
+                        .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Category");
+                    b.Navigation("Question");
                 });
 
             modelBuilder.Entity("ElixBackend.Domain.Entities.UserToken", b =>

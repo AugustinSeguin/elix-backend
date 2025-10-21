@@ -1,0 +1,43 @@
+# Requêtes pour tester les routes de AnswerController
+# Variables :
+# - Remplace {{baseUrl}} par l'URL où ton API tourne (ex: http://localhost:5000 ou https://localhost:5001)
+# - Remplace {{jwt}} par un token JWT valide (les routes POST/PUT/DELETE nécessitent le rôle admin)
+
+@baseUrl = http://localhost:5000
+
+### Get all answers
+GET {{baseUrl}}/api/Answer
+Authorization: Bearer {{jwt}}
+Accept: application/json
+
+### Get answer by id
+GET {{baseUrl}}/api/Answer/1
+Authorization: Bearer {{jwt}}
+Accept: application/json
+
+### Create an answer (admin)
+POST {{baseUrl}}/api/Answer
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "title": "Réponse exemple",
+  "questionId": 1,
+  "isValid": true
+}
+
+### Update an answer (admin)
+PUT {{baseUrl}}/api/Answer/1
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "id": 1,
+  "title": "Réponse modifiée",
+  "questionId": 1,
+  "isValid": false
+}
+
+### Delete an answer (admin)
+DELETE {{baseUrl}}/api/Answer/1
+Authorization: Bearer {{jwt}}

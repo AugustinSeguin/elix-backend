@@ -1,0 +1,42 @@
+# Requêtes pour tester les routes de QuizController
+# Variables :
+# - Remplace {{baseUrl}} par l'URL où ton API tourne (ex: http://localhost:5000 ou https://localhost:5001)
+# - Remplace {{jwt}} par un token JWT valide (les routes POST/PUT/DELETE nécessitent le rôle admin)
+
+@baseUrl = http://localhost:5000
+
+### Get all quizzes
+GET {{baseUrl}}/api/Quiz
+Authorization: Bearer {{jwt}}
+Accept: application/json
+
+### Get quiz by id
+GET {{baseUrl}}/api/Quiz/1
+Authorization: Bearer {{jwt}}
+Accept: application/json
+
+### Create a quiz (admin)
+POST {{baseUrl}}/api/Quiz
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "title": "Exemple de quiz",
+  "categoryId": 1
+}
+
+### Update a quiz (admin)
+PUT {{baseUrl}}/api/Quiz/1
+Content-Type: application/json
+Authorization: Bearer {{jwt}}
+
+{
+  "id": 1,
+  "title": "Quiz mis à jour",
+  "categoryId": 1
+}
+
+### Delete a quiz (admin)
+DELETE {{baseUrl}}/api/Quiz/1
+Authorization: Bearer {{jwt}}
+

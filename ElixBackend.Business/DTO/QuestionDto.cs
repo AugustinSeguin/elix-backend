@@ -8,8 +8,6 @@ public class QuestionDto
 
     public required string Title { get; set; }
 
-    public int CategoryId { get; set; }
-
     public string? MediaPath { get; set; }
 
     public static QuestionDto QuestionToQuestionDto(Question question)
@@ -18,7 +16,6 @@ public class QuestionDto
         {
             Id = question.Id,
             Title = question.Title,
-            CategoryId = question.CategoryId,
             MediaPath = question.MediaPath
         };
     }

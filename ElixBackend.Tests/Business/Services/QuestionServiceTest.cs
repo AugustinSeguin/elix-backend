@@ -22,8 +22,8 @@ public class QuestionServiceTest
     [Test]
     public async Task AddQuestionAsync_CallsRepositoryAndReturnsDto()
     {
-        var dto = new QuestionDto { Title = "Q", CategoryId = 1 };
-        var question = new Question { Id = 1, Title = "Q", CategoryId = 1 };
+        var dto = new QuestionDto { Title = "Q" };
+        var question = new Question { Id = 1, Title = "Q" };
         _questionRepositoryMock.Setup(r => r.AddQuestionAsync(It.IsAny<Question>())).ReturnsAsync(question);
         _questionRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
@@ -32,14 +32,14 @@ public class QuestionServiceTest
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(question.Id));
         Assert.That(result.Title, Is.EqualTo(question.Title));
-        _questionRepositoryMock.Verify(r => r.AddQuestionAsync(It.Is<Question>(q => q.Title == dto.Title && q.CategoryId == dto.CategoryId)), Times.Once);
+        _questionRepositoryMock.Verify(r => r.AddQuestionAsync(It.Is<Question>(q => q.Title == dto.Title)), Times.Once);
         _questionRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
     public async Task GetQuestionByIdAsync_ReturnsDto()
     {
-        var question = new Question { Id = 2, Title = "Q2", CategoryId = 1, MediaPath = "p" };
+        var question = new Question { Id = 2, Title = "Q2", MediaPath = "p" };
         _questionRepositoryMock.Setup(r => r.GetQuestionByIdAsync(2)).ReturnsAsync(question);
 
         var result = await _questionService.GetQuestionByIdAsync(2);
@@ -53,8 +53,8 @@ public class QuestionServiceTest
     {
         var questions = new List<Question>
         {
-            new Question { Id = 1, Title = "A", CategoryId = 1 },
-            new Question { Id = 2, Title = "B", CategoryId = 1 }
+            new Question { Id = 1, Title = "A" },
+            new Question { Id = 2, Title = "B" }
         };
         _questionRepositoryMock.Setup(r => r.GetAllQuestionsAsync()).ReturnsAsync(questions);
 
@@ -67,8 +67,8 @@ public class QuestionServiceTest
     [Test]
     public async Task UpdateQuestionAsync_CallsRepositoryAndReturnsDto()
     {
-        var dto = new QuestionDto { Id = 3, Title = "Up", CategoryId = 2 };
-        var question = new Question { Id = 3, Title = "Up", CategoryId = 2 };
+        var dto = new QuestionDto { Id = 3, Title = "Up" };
+        var question = new Question { Id = 3, Title = "Up" };
         _questionRepositoryMock.Setup(r => r.UpdateQuestionAsync(It.IsAny<Question>())).ReturnsAsync(question);
         _questionRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
