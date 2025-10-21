@@ -92,14 +92,13 @@ public class QuestionRepositoryTest
     [Test]
     public async Task DeleteQuestionAsync_RemovesQuestion()
     {
-        var question = new Question { Title = "Del", CategoryId = 1 };
-        _context.Questions.Add(question);
-        await _context.SaveChangesAsync();
+        var question = new Question { Id = 1, Title = "Q" };
+        await _repository.AddQuestionAsync(question);
 
-        await _repository.DeleteQuestionAsync(question.Id);
-        await _repository.SaveChangesAsync();
+        await _repository.DeleteQuestionAsync(1);
 
-        var exists = await _context.Questions.AnyAsync(q => q.Id == question.Id);
-        Assert.That(exists, Is.False);
+        var found = await _repository.GetQuestionByIdAsync(1);
+        Assert.That(found, Is.Null);
     }
+
 }
