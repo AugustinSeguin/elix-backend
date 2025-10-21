@@ -1,5 +1,4 @@
 using ElixBackend.Business.DTO;
-using ElixBackend.Domain.Entities;
 
 namespace ElixBackend.Business.IService;
 
