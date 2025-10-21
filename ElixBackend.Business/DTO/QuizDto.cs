@@ -1,6 +1,8 @@
-namespace ElixBackend.Domain.Entities;
+using ElixBackend.Domain.Entities;
 
-public class Quiz
+namespace ElixBackend.Business.DTO;
+
+public class QuizDto
 {
     public int Id { get; set; }
     public string Title { get; set; }
