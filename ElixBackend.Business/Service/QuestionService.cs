@@ -12,7 +12,6 @@ public class QuestionService(IQuestionRepository questionRepository) : IQuestion
         var question = new Question
         {
             Title = questionDto.Title,
-            CategoryId = questionDto.CategoryId,
             MediaPath = questionDto.MediaPath
         };
         var result = await questionRepository.AddQuestionAsync(question);
@@ -38,7 +37,6 @@ public class QuestionService(IQuestionRepository questionRepository) : IQuestion
         {
             Id = questionDto.Id,
             Title = questionDto.Title,
-            CategoryId = questionDto.CategoryId,
             MediaPath = questionDto.MediaPath
         };
         var result = await questionRepository.UpdateQuestionAsync(question);

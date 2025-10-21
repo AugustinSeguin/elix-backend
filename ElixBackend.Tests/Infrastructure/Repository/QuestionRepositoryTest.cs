@@ -35,7 +35,7 @@ public class QuestionRepositoryTest
     [Test]
     public async Task AddQuestionAsync_AddsQuestionAndReturnsIt()
     {
-        var question = new Question { Title = "Q1", CategoryId = 1, MediaPath = "p" };
+        var question = new Question { Title = "Q1", MediaPath = "p" };
 
         var result = await _repository.AddQuestionAsync(question);
         await _repository.SaveChangesAsync();
@@ -48,7 +48,7 @@ public class QuestionRepositoryTest
     [Test]
     public async Task GetQuestionByIdAsync_ReturnsQuestion()
     {
-        var question = new Question { Title = "Q2", CategoryId = 2, MediaPath = "m" };
+        var question = new Question { Title = "Q2", MediaPath = "m" };
         _context.Questions.Add(question);
         await _context.SaveChangesAsync();
 
@@ -63,8 +63,8 @@ public class QuestionRepositoryTest
     {
         var questions = new List<Question>
         {
-            new Question { Title = "A", CategoryId = 1 },
-            new Question { Title = "B", CategoryId = 1 }
+            new Question { Title = "A" },
+            new Question { Title = "B" }
         };
         _context.Questions.AddRange(questions);
         await _context.SaveChangesAsync();
@@ -77,7 +77,7 @@ public class QuestionRepositoryTest
     [Test]
     public async Task UpdateQuestionAsync_UpdatesQuestion()
     {
-        var question = new Question { Title = "Old", CategoryId = 1, MediaPath = "old" };
+        var question = new Question { Title = "Old", MediaPath = "old" };
         _context.Questions.Add(question);
         await _context.SaveChangesAsync();
 
@@ -94,8 +94,10 @@ public class QuestionRepositoryTest
     {
         var question = new Question { Id = 1, Title = "Q" };
         await _repository.AddQuestionAsync(question);
+        await _repository.SaveChangesAsync();
 
         await _repository.DeleteQuestionAsync(1);
+        await _repository.SaveChangesAsync();
 
         var found = await _repository.GetQuestionByIdAsync(1);
         Assert.That(found, Is.Null);

@@ -24,8 +24,8 @@ public class QuestionControllerTest
     {
         var questions = new List<QuestionDto>
         {
-            new QuestionDto { Id = 1, Title = "Q1", CategoryId = 1, MediaPath = null },
-            new QuestionDto { Id = 2, Title = "Q2", CategoryId = 1, MediaPath = "path" }
+            new QuestionDto { Id = 1, Title = "Q1", MediaPath = null },
+            new QuestionDto { Id = 2, Title = "Q2", MediaPath = "path" }
         };
         _questionServiceMock.Setup(s => s.GetAllQuestionsAsync()).ReturnsAsync(questions);
 
@@ -39,7 +39,7 @@ public class QuestionControllerTest
     [Test]
     public async Task GetById_ReturnsOkIfFound()
     {
-        var dto = new QuestionDto { Id = 1, Title = "Q1", CategoryId = 1 };
+        var dto = new QuestionDto { Id = 1, Title = "Q1" };
         _questionServiceMock.Setup(s => s.GetQuestionByIdAsync(1)).ReturnsAsync(dto);
 
         var result = await _controller.GetById(1);
@@ -61,8 +61,8 @@ public class QuestionControllerTest
     [Test]
     public async Task Create_ReturnsCreatedAtAction()
     {
-        var dto = new QuestionDto { Title = "NewQ", CategoryId = 2 };
-        var created = new QuestionDto { Id = 3, Title = "NewQ", CategoryId = 2 };
+        var dto = new QuestionDto { Title = "NewQ" };
+        var created = new QuestionDto { Id = 3, Title = "NewQ" };
         _questionServiceMock.Setup(s => s.AddQuestionAsync(dto)).ReturnsAsync(created);
 
         var result = await _controller.Create(dto);
@@ -75,8 +75,8 @@ public class QuestionControllerTest
     [Test]
     public async Task Update_ReturnsOkIfValid()
     {
-        var dto = new QuestionDto { Id = 4, Title = "UpQ", CategoryId = 1 };
-        var updated = new QuestionDto { Id = 4, Title = "UpQ", CategoryId = 1 };
+        var dto = new QuestionDto { Id = 4, Title = "UpQ" };
+        var updated = new QuestionDto { Id = 4, Title = "UpQ" };
         _questionServiceMock.Setup(s => s.UpdateQuestionAsync(dto)).ReturnsAsync(updated);
 
         var result = await _controller.Update(4, dto);
@@ -89,7 +89,7 @@ public class QuestionControllerTest
     [Test]
     public async Task Update_ReturnsBadRequestIfIdMismatch()
     {
-        var dto = new QuestionDto { Id = 5, Title = "X", CategoryId = 1 };
+        var dto = new QuestionDto { Id = 5, Title = "X" };
 
         var result = await _controller.Update(6, dto);
 
