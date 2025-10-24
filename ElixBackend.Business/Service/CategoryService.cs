@@ -7,21 +7,22 @@ namespace ElixBackend.Business.Service;
 
 public class CategoryService(ICategoryRepository categoryRepository) : ICategoryService
 {
-    public async Task<Category> AddCategoryAsync(CategoryDto categoryDto)
+    public async Task<CategoryDto> AddCategoryAsync(CategoryDto category)
     {
-        var category = new Category
+        var categoryEntity = new Category
         {
-            Title = categoryDto.Title,
-            Description = categoryDto.Description
+            Title = category.Title,
+            Description = category.Description
         };
-        var result = await categoryRepository.AddCategoryAsync(category);
+        var result = await categoryRepository.AddCategoryAsync(categoryEntity);
         await categoryRepository.SaveChangesAsync();
-        return result;
+        return CategoryDto.CategoryToCategoryDto(result);
     }
 
-    public async Task<Category?> GetCategoryByIdAsync(int id)
+    public async Task<CategoryDto?> GetCategoryByIdAsync(int id)
     {
-        return await categoryRepository.GetCategoryByIdAsync(id);
+        var category = await categoryRepository.GetCategoryByIdAsync(id);
+        return category is null ? null : CategoryDto.CategoryToCategoryDto(category);
     }
 
     public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
@@ -30,17 +31,17 @@ public class CategoryService(ICategoryRepository categoryRepository) : ICategory
         return categories.Select(CategoryDto.CategoryToCategoryDto);
     }
 
-    public async Task<Category> UpdateCategoryAsync(CategoryDto categoryDto)
+    public async Task<CategoryDto> UpdateCategoryAsync(CategoryDto category)
     {
-        var category = new Category
+        var categoryEntity = new Category
         {
-            Id = categoryDto.Id,
-            Title = categoryDto.Title,
-            Description = categoryDto.Description
+            Id = category.Id,
+            Title = category.Title,
+            Description = category.Description
         };
-        var result = await categoryRepository.UpdateCategoryAsync(category);
+        var result = await categoryRepository.UpdateCategoryAsync(categoryEntity);
         await categoryRepository.SaveChangesAsync();
-        return result;
+        return CategoryDto.CategoryToCategoryDto(result);
     }
 
     public async Task DeleteCategoryAsync(int id)

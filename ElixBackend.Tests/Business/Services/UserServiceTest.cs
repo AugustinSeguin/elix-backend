@@ -20,29 +20,32 @@ public class UserServiceTest
     }
 
     [Test]
-    public async Task GetUserByIdAsync_ReturnsUser()
+    public async Task GetUserByIdAsync_ReturnsUserDto()
     {
         var user = new User { Id = 1, Firstname = "John", Lastname = "Doe", Email = "john@doe.com", PasswordHash = "hash" };
         _userRepositoryMock.Setup(r => r.GetUserByIdAsync(1)).ReturnsAsync(user);
 
         var result = await _userService.GetUserByIdAsync(1);
 
-        Assert.That(result, Is.EqualTo(user));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Id, Is.EqualTo(user.Id));
+        Assert.That(result.Email, Is.EqualTo(user.Email));
     }
 
     [Test]
-    public async Task GetUserByEmailAsync_ReturnsUser()
+    public async Task GetUserByEmailAsync_ReturnsUserDto()
     {
         var user = new User { Id = 2, Firstname = "Jane", Lastname = "Smith", Email = "jane@smith.com", PasswordHash = "hash" };
         _userRepositoryMock.Setup(r => r.GetUserByEmailAsync("jane@smith.com")).ReturnsAsync(user);
 
         var result = await _userService.GetUserByEmailAsync("jane@smith.com");
 
-        Assert.That(result, Is.EqualTo(user));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Email, Is.EqualTo(user.Email));
     }
 
     [Test]
-    public async Task GetAllUsersAsync_ReturnsUsers()
+    public async Task GetAllUsersAsync_ReturnsUserDtos()
     {
         var users = new List<User>
         {
@@ -53,11 +56,13 @@ public class UserServiceTest
 
         var result = await _userService.GetAllUsersAsync();
 
-        Assert.That(result, Is.EquivalentTo(users));
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.Any(d => d.Email == "john@doe.com"), Is.True);
+        Assert.That(result.Any(d => d.Email == "jane@smith.com"), Is.True);
     }
 
     [Test]
-    public async Task AddUserAsync_CallsRepositoryAndReturnsUser()
+    public async Task AddUserAsync_CallsRepositoryAndReturnsUserDto()
     {
         var userDto = new UserDto
         {
@@ -74,13 +79,14 @@ public class UserServiceTest
 
         var result = await _userService.AddUserAsync(userDto);
 
-        Assert.That(result, Is.EqualTo(user));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Id, Is.EqualTo(user.Id));
         _userRepositoryMock.Verify(r => r.AddUserAsync(It.IsAny<User>()), Times.Once);
         _userRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task UpdateUserAsync_CallsRepositoryAndReturnsUser()
+    public async Task UpdateUserAsync_CallsRepositoryAndReturnsUserDto()
     {
         var userDto = new UserDto
         {
@@ -98,7 +104,8 @@ public class UserServiceTest
 
         var result = await _userService.UpdateUserAsync(userDto);
 
-        Assert.That(result, Is.EqualTo(user));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Id, Is.EqualTo(user.Id));
         _userRepositoryMock.Verify(r => r.UpdateUserAsync(It.IsAny<User>()), Times.Once);
         _userRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }

@@ -1,11 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure;
 using ElixBackend.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
-using NUnit.Framework;
 
 namespace ElixBackend.Tests.Infrastructure.Repository;
 
@@ -82,7 +78,7 @@ public class QuestionRepositoryTest
         await _context.SaveChangesAsync();
 
         question.Title = "New";
-        var updated = await _repository.UpdateQuestionAsync(question);
+        await _repository.UpdateQuestionAsync(question);
         await _repository.SaveChangesAsync();
 
         var result = await _repository.GetQuestionByIdAsync(question.Id);

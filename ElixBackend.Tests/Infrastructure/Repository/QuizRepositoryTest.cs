@@ -31,74 +31,93 @@ public class QuizRepositoryTest
     [Test]
     public async Task AddQuizAsync_AddsQuizAndReturnsIt()
     {
-        var quiz = new Quiz { Title = "Quiz1", CategoryId = 1 };
+        var category = new Category { Title = "Cat X" };
+        await _context.Categories.AddAsync(category);
+        await _context.SaveChangesAsync();
 
+        var quiz = new Quiz { Title = "New Quiz", CategoryId = category.Id };
         var result = await _repository.AddQuizAsync(quiz);
         await _repository.SaveChangesAsync();
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Title, Is.EqualTo("Quiz1"));
-        Assert.That(await _context.Quizzes.AnyAsync(q => q.Title == "Quiz1"), Is.True);
+        Assert.That(result.Title, Is.EqualTo("New Quiz"));
+        Assert.That(await _context.Quizzes.AnyAsync(q => q.Title == "New Quiz"), Is.True);
     }
 
     [Test]
-    public async Task GetQuizByIdAsync_ReturnsQuiz()
+    public async Task GetQuizByIdAsync_ReturnsQuizWithCategory()
     {
-        var quiz = new Quiz { Title = "Quiz2", CategoryId = 2 };
-        _context.Quizzes.Add(quiz);
+        var category = new Category { Title = "Cat 1", Description = "Desc" };
+        await _context.Categories.AddAsync(category);
+        await _context.SaveChangesAsync();
+
+        var quiz = new Quiz { Title = "Quiz 1", CategoryId = category.Id };
+        await _context.Quizzes.AddAsync(quiz);
         await _context.SaveChangesAsync();
 
         var result = await _repository.GetQuizByIdAsync(quiz.Id);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Title, Is.EqualTo("Quiz2"));
-        Assert.That(result.CategoryId, Is.EqualTo(2));
+        Assert.That(result!.Title, Is.EqualTo("Quiz 1"));
+        Assert.That(result.Category, Is.Not.Null);
+        Assert.That(result.Category!.Title, Is.EqualTo("Cat 1"));
     }
 
     [Test]
     public async Task GetAllQuizzesAsync_ReturnsAllQuizzes()
     {
-        var quizzes = new List<Quiz>
-        {
-            new Quiz { Title = "A", CategoryId = 1 },
-            new Quiz { Title = "B", CategoryId = 2 }
-        };
-        _context.Quizzes.AddRange(quizzes);
+        var category = new Category { Title = "Cat A" };
+        await _context.Categories.AddAsync(category);
+        await _context.SaveChangesAsync();
+
+        _context.Quizzes.AddRange(
+            new Quiz { Title = "Q1", CategoryId = category.Id },
+            new Quiz { Title = "Q2", CategoryId = category.Id }
+        );
         await _context.SaveChangesAsync();
 
         var result = await _repository.GetAllQuizzesAsync();
 
         Assert.That(result.Count(), Is.EqualTo(2));
-        Assert.That(result.Any(q => q.Title == "A"));
-        Assert.That(result.Any(q => q.Title == "B"));
+        Assert.That(result.Any(q => q.Title == "Q1"), Is.True);
+        Assert.That(result.Any(q => q.Title == "Q2"), Is.True);
     }
 
     [Test]
-    public async Task UpdateQuizAsync_UpdatesQuiz()
+    public async Task UpdateQuizAsync_UpdatesExistingQuiz()
     {
-        var quiz = new Quiz { Title = "Old", CategoryId = 1 };
-        _context.Quizzes.Add(quiz);
+        var category = new Category { Title = "C" };
+        await _context.Categories.AddAsync(category);
         await _context.SaveChangesAsync();
 
-        quiz.Title = "New";
+        var quiz = new Quiz { Title = "Before", CategoryId = category.Id };
+        await _context.Quizzes.AddAsync(quiz);
+        await _context.SaveChangesAsync();
+
+        quiz.Title = "After";
         var updated = await _repository.UpdateQuizAsync(quiz);
         await _repository.SaveChangesAsync();
 
-        var result = await _repository.GetQuizByIdAsync(quiz.Id);
-        Assert.That(result.Title, Is.EqualTo("New"));
+        var found = await _repository.GetQuizByIdAsync(quiz.Id);
+        Assert.That(found, Is.Not.Null);
+        Assert.That(found!.Title, Is.EqualTo("After"));
     }
 
     [Test]
     public async Task DeleteQuizAsync_RemovesQuiz()
     {
-        var quiz = new Quiz { Id = 1, Title = "Quiz", CategoryId = 1 };
-        await _repository.AddQuizAsync(quiz);
+        var category = new Category { Title = "D" };
+        await _context.Categories.AddAsync(category);
+        await _context.SaveChangesAsync();
+
+        var quiz = new Quiz { Title = "ToDelete", CategoryId = category.Id };
+        await _context.Quizzes.AddAsync(quiz);
+        await _context.SaveChangesAsync();
+
+        await _repository.DeleteQuizAsync(quiz.Id);
         await _repository.SaveChangesAsync();
 
-        await _repository.DeleteQuizAsync(1);
-        await _repository.SaveChangesAsync();
-
-        var found = await _repository.GetQuizByIdAsync(1);
+        var found = await _repository.GetQuizByIdAsync(quiz.Id);
         Assert.That(found, Is.Null);
     }
 }
