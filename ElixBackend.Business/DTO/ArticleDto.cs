@@ -11,6 +11,10 @@ public class ArticleDto
     public string? MediaPath { get; set; }
     public string? Footer { get; set; }
 
+    // Nouvelle association
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
+
     public static ArticleDto FromEntity(Article article)
     {
         return new ArticleDto
@@ -20,7 +24,9 @@ public class ArticleDto
             Subtitle = article.Subtitle,
             Content = article.Content,
             MediaPath = article.MediaPath,
-            Footer = article.Footer
+            Footer = article.Footer,
+            CategoryId = article.CategoryId,
+            Category = article.Category
         };
     }
 
@@ -28,12 +34,14 @@ public class ArticleDto
     {
         return new Article
         {
-            Id = this.Id,
-            Title = this.Title,
-            Subtitle = this.Subtitle,
-            Content = this.Content,
-            MediaPath = this.MediaPath,
-            Footer = this.Footer
+            Id = Id,
+            Title = Title,
+            Subtitle = Subtitle,
+            Content = Content,
+            MediaPath = MediaPath,
+            Footer = Footer,
+            CategoryId = CategoryId,
+            Category = Category
         };
     }
 }

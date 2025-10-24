@@ -13,4 +13,8 @@ public class Article
     public string? MediaPath { get; set; }
 
     public string? Footer { get; set; }
+
+    // Nouvelle relation vers Category
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
 }
