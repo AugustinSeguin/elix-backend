@@ -9,12 +9,20 @@ public class QuizRepository(ElixDbContext context) : IQuizRepository
 
     public async Task<Quiz?> GetQuizByIdAsync(int id)
     {
-        return await context.Quizzes.Include(q => q.Category).FirstOrDefaultAsync(q => q.Id == id);
+        // Utiliser AsNoTracking pour éviter les problèmes de tracking dans les tests
+        return await context.Quizzes
+            .AsNoTracking()
+            .Include(q => q.Category)
+            .FirstOrDefaultAsync(q => q.Id == id);
     }
 
     public async Task<IEnumerable<Quiz>> GetAllQuizzesAsync()
     {
-        return await context.Quizzes.Include(q => q.Category).ToListAsync();
+        // Récupérer sans tracking pour éviter conflits si les entités sont manipulées ailleurs
+        return await context.Quizzes
+            .AsNoTracking()
+            .Include(q => q.Category)
+            .ToListAsync();
     }
 
     public async Task<Quiz> AddQuizAsync(Quiz quiz)
@@ -23,10 +31,20 @@ public class QuizRepository(ElixDbContext context) : IQuizRepository
         return entry.Entity;
     }
 
-    public Task<Quiz> UpdateQuizAsync(Quiz quiz)
+    public async Task<Quiz> UpdateQuizAsync(Quiz quiz)
     {
+        // Préférer mettre à jour l'entité déjà trackée pour éviter les conflits de tracking
+        var existing = await context.Quizzes.FindAsync(quiz.Id);
+        if (existing != null)
+        {
+            existing.Title = quiz.Title;
+            existing.CategoryId = quiz.CategoryId;
+            existing.Category = quiz.Category;
+            return existing;
+        }
+
         var entry = context.Quizzes.Update(quiz);
-        return Task.FromResult(entry.Entity);
+        return entry.Entity;
     }
 
     public async Task DeleteQuizAsync(int id)

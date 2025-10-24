@@ -1,8 +1,11 @@
+using System.Collections.Generic;
+using System.Linq;
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
 using Moq;
+using NUnit.Framework;
 
 namespace ElixBackend.Tests.Business.Services;
 
@@ -29,7 +32,9 @@ public class CategoryServiceTest
 
         var result = await _categoryService.AddCategoryAsync(dto);
 
-        Assert.That(result, Is.EqualTo(category));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Title, Is.EqualTo(category.Title));
+        Assert.That(result.Description, Is.EqualTo(category.Description));
         _categoryRepositoryMock.Verify(r => r.AddCategoryAsync(It.Is<Category>(c => c.Title == dto.Title && c.Description == dto.Description)), Times.Once);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -42,7 +47,9 @@ public class CategoryServiceTest
 
         var result = await _categoryService.GetCategoryByIdAsync(2);
 
-        Assert.That(result, Is.EqualTo(category));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Title, Is.EqualTo(category.Title));
+        Assert.That(result.Description, Is.EqualTo(category.Description));
     }
 
     [Test]
@@ -72,7 +79,8 @@ public class CategoryServiceTest
 
         var result = await _categoryService.UpdateCategoryAsync(dto);
 
-        Assert.That(result, Is.EqualTo(category));
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Title, Is.EqualTo(category.Title));
         _categoryRepositoryMock.Verify(r => r.UpdateCategoryAsync(It.Is<Category>(c => c.Id == dto.Id && c.Title == dto.Title)), Times.Once);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }

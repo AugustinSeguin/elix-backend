@@ -29,15 +29,15 @@ public class UserController(
     {
         try
         {
-            var user = await userService.GetUserByEmailAsync(loginRequestDto.Email);
-            if (user == null)
+            var userDto = await userService.GetUserByEmailAsync(loginRequestDto.Email);
+            if (userDto == null)
             {
                 ModelState.AddModelError(string.Empty, "Email ou mot de passe invalide.");
                 return View(loginRequestDto);
             }
 
-            var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginRequestDto.Password);
+            var passwordHasher = new PasswordHasher<UserDto>();
+            var result = passwordHasher.VerifyHashedPassword(userDto, userDto.Password, loginRequestDto.Password);
 
             if (result == PasswordVerificationResult.Failed)
             {
@@ -46,9 +46,9 @@ public class UserController(
             }
 
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];
-            JwtTokenGenerator.GenerateAdminToken(user.Id, jwtSecretKey, out var jti);
+            JwtTokenGenerator.GenerateAdminToken(userDto.Id, jwtSecretKey, out var jti);
 
-            await tokenService.AddTokenAsync(jti, user.Id);
+            await tokenService.AddTokenAsync(jti, userDto.Id);
 
             return RedirectToAction("Index", "Home");
         }

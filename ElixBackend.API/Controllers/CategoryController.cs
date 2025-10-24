@@ -26,7 +26,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
         var category = await categoryService.GetCategoryByIdAsync(id);
         if (category == null)
             return NotFound();
-        return Ok(CategoryDto.CategoryToCategoryDto(category));
+        return Ok(category);
     }
 
     // POST: api/Category
@@ -35,7 +35,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     public async Task<ActionResult<CategoryDto>> Create(CategoryDto dto)
     {
         var created = await categoryService.AddCategoryAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, CategoryDto.CategoryToCategoryDto(created));
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     // PUT: api/Category/5
@@ -47,7 +47,7 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
             return BadRequest();
 
         var updated = await categoryService.UpdateCategoryAsync(dto);
-        return Ok(CategoryDto.CategoryToCategoryDto(updated));
+        return Ok(updated);
     }
 
     // DELETE: api/Category/5

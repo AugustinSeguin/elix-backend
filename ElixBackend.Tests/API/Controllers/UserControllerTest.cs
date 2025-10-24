@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using ElixBackend.API.Controllers;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.DTO;
-using ElixBackend.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace ElixBackend.Tests.API.Controllers;
@@ -39,7 +38,7 @@ public class UserControllerTest
     {
         var controller = CreateController();
         var loginRequest = new LoginRequestDto { Email = "notfound@test.com", Password = "pass" };
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((User?)null);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((UserDto?)null);
 
         var result = await controller.Login(loginRequest);
 
@@ -51,16 +50,20 @@ public class UserControllerTest
     {
         var controller = CreateController();
         var loginRequest = new LoginRequestDto { Email = "test@test.com", Password = "wrong" };
-        var user = new User
+        var userDto = new UserDto
         {
             Id = 1,
             Email = loginRequest.Email,
-            PasswordHash = new PasswordHasher<User>().HashPassword(null,
-                "good"),
             Firstname = "joe",
-            Lastname = "joe"
+            Lastname = "joe",
+            Password = "",
+            PasswordRepeated = ""
         };
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
+        var passwordHasher = new PasswordHasher<UserDto>();
+        userDto.Password = passwordHasher.HashPassword(userDto, "good");
+        userDto.PasswordRepeated = userDto.Password;
+
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(userDto);
 
         var result = await controller.Login(loginRequest);
 

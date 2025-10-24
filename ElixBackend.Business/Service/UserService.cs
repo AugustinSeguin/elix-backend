@@ -7,35 +7,61 @@ namespace ElixBackend.Business.Service
 {
     public class UserService(IUserRepository userRepository) : IUserService
     {
-        public async Task<User?> GetUserByIdAsync(int id)
+        // Map User entity to UserDto
+        private static UserDto? ToDto(User? user)
         {
-            return await userRepository.GetUserByIdAsync(id);
+            if (user == null) return null;
+            return new UserDto
+            {
+                Id = user.Id,
+                Email = user.Email!,
+                Password = user.PasswordHash,
+                PasswordRepeated = user.PasswordHash,
+                Firstname = user.Firstname,
+                Lastname = user.Lastname,
+                Username = user.Username,
+                Birthdate = user.BirthDate,
+                Gender = user.Gender,
+                IsPremium = user.IsPremium,
+                PhoneNumber = user.PhoneNumber,
+                IsAdmin = user.IsAdmin
+            };
         }
 
-        public async Task<User?> GetUserByEmailAsync(string? email)
+        // Use existing converter on DTO to produce User entity when needed
+
+        public async Task<UserDto?> GetUserByIdAsync(int id)
         {
-            return await userRepository.GetUserByEmailAsync(email);
+            var user = await userRepository.GetUserByIdAsync(id);
+            return ToDto(user);
         }
 
-        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        public async Task<UserDto?> GetUserByEmailAsync(string? email)
         {
-            return await userRepository.GetAllUsersAsync();
+            var user = await userRepository.GetUserByEmailAsync(email);
+            return ToDto(user);
         }
 
-        public async Task<User?> AddUserAsync(UserDto userDto)
+        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        {
+            var users = await userRepository.GetAllUsersAsync();
+            return users.Select(u => ToDto(u)!).Where(d => d != null)!;
+        }
+
+        public async Task<UserDto?> AddUserAsync(UserDto userDto)
         {
             var user = userDto.UserDtoToUser(userDto);
             var newUser = await userRepository.AddUserAsync(user);
             await userRepository.SaveChangesAsync();
-            return newUser;
+            return ToDto(newUser);
         }
 
-        public async Task<User?> UpdateUserAsync(UserDto userDto)
+        public async Task<UserDto?> UpdateUserAsync(UserDto userDto)
         {
             var user = userDto.UserDtoToUser(userDto);
             var userUpdated = await userRepository.UpdateUserAsync(user);
             await userRepository.SaveChangesAsync();
-            return userUpdated;
+            return ToDto(userUpdated);
         }
 
         public async Task DeleteUserAsync(int id)

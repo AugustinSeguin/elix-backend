@@ -19,14 +19,14 @@ namespace ElixBackend.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
         {
-            var user = await userService.GetUserByEmailAsync(loginRequestDto.Email);
-            if (user == null)
+            var userDto = await userService.GetUserByEmailAsync(loginRequestDto.Email);
+            if (userDto == null)
             {
                 return Unauthorized("Email ou mot de passe invalide.");
             }
 
-            var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginRequestDto.Password);
+            var passwordHasher = new PasswordHasher<UserDto>();
+            var result = passwordHasher.VerifyHashedPassword(userDto, userDto.Password, loginRequestDto.Password);
 
             if (result == PasswordVerificationResult.Failed)
             {
@@ -35,15 +35,15 @@ namespace ElixBackend.API.Controllers
             string token;
             string jti;
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];
-            if(user.IsAdmin)
+            if(userDto.IsAdmin)
             { 
-                token = JwtTokenGenerator.GenerateAdminToken(user.Id, jwtSecretKey, out jti);
-                await tokenService.AddTokenAsync(jti, user.Id);
+                token = JwtTokenGenerator.GenerateAdminToken(userDto.Id, jwtSecretKey, out jti);
+                await tokenService.AddTokenAsync(jti, userDto.Id);
                 return Ok(new { token });
             }
-            token = JwtTokenGenerator.GenerateToken(user.Id.ToString(), jwtSecretKey, out jti);
+            token = JwtTokenGenerator.GenerateToken(userDto.Id.ToString(), jwtSecretKey, out jti);
 
-            await tokenService.AddTokenAsync(jti, user.Id);
+            await tokenService.AddTokenAsync(jti, userDto.Id);
 
             return Ok(new { token });
         }
@@ -70,8 +70,8 @@ namespace ElixBackend.API.Controllers
                     "Le mot de passe doit contenir au minimum 8 caractères, dont une majuscule, une minuscule et un chiffre.");
             }
 
-            var passwordHasher = new PasswordHasher<User?>();
-            userDto.Password = passwordHasher.HashPassword(null, userDto.Password);
+            var passwordHasher = new PasswordHasher<UserDto>();
+            userDto.Password = passwordHasher.HashPassword(userDto, userDto.Password);
 
             var newUser = await userService.AddUserAsync(userDto);
 

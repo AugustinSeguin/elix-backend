@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.DTO;
-using ElixBackend.Domain.Entities;
 using ElixBackend.WebApp.Controllers;
+using Microsoft.AspNetCore.Identity;
 
 namespace ElixBackend.Tests.WebApp.Controllers;
 
@@ -47,7 +47,7 @@ public class UserControllerTest
     {
         var controller = CreateController();
         var loginRequest = new LoginRequestDto { Email = "test@test.com", Password = "wrong" };
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((User?)null);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((UserDto?)null);
 
         var result = await controller.Login(loginRequest);
 
@@ -60,20 +60,22 @@ public class UserControllerTest
     {
         var controller = CreateController();
         var loginRequest = new LoginRequestDto { Email = "test@test.com", Password = "wrong" };
-        var user = new User
+        var userDto = new UserDto
         {
             Id = 1,
             Email = loginRequest.Email,
             Firstname = "joe",
             Lastname = "joe",
-            PasswordHash = ""
+            Password = "",
+            PasswordRepeated = ""
         };
         
         // Hash un mot de passe différent pour simuler un mauvais mot de passe
-        var passwordHasher = new Microsoft.AspNetCore.Identity.PasswordHasher<User>();
-        user.PasswordHash = passwordHasher.HashPassword(user, "not_the_right_password");
+        var passwordHasher = new PasswordHasher<UserDto>();
+        userDto.Password = passwordHasher.HashPassword(userDto, "not_the_right_password");
+        userDto.PasswordRepeated = userDto.Password;
 
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(user);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(userDto);
         _configurationMock.Setup(c => c["JwtSettings:SecretKey"]).Returns("secret");
 
         var result = await controller.Login(loginRequest);

@@ -1,0 +1,51 @@
+### ArticleController - Obtenir tous les articles
+GET http://localhost:5000/api/Article
+Accept: application/json
+
+
+### ArticleController - Obtenir un article par id (ex: 1)
+GET http://localhost:5000/api/Article/1
+Accept: application/json
+
+
+### ArticleController - Créer un article
+POST http://localhost:5000/api/Article
+Content-Type: application/json
+
+{
+  "title": "Titre de l'article",
+  "subtitle": "Sous-titre optionnel",
+  "content": "Contenu principal de l'article...",
+  "mediaPath": "/media/articles/img1.jpg",
+  "footer": "Pied de page optionnel"
+}
+
+
+### ArticleController - Mettre à jour un article (id=1)
+PUT http://localhost:5000/api/Article/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "title": "Titre mis à jour",
+  "subtitle": "Sous-titre mis à jour",
+  "content": "Contenu mis à jour...",
+  "mediaPath": "/media/articles/img1-updated.jpg",
+  "footer": "Pied de page mis à jour"
+}
+
+
+### ArticleController - Supprimer un article (id=1)
+DELETE http://localhost:5000/api/Article/1
+
+
+### Notes:
+# - Remplacez l'URL de base (http://localhost:5000) par l'adresse de votre API si nécessaire (Docker, Kestrel, HTTPS...).
+# - Pour les endpoints qui nécessitent une authentification (si applicable), ajoutez un header Authorization :
+
+# Authorization: Bearer <VOTRE_JWT>
+
+# Exemples curl rapides (optionnel):
+# curl -sS http://localhost:5000/api/Article
+# curl -sS -X POST http://localhost:5000/api/Article -H "Content-Type: application/json" -d '{"title":"T","content":"C"}'
+
