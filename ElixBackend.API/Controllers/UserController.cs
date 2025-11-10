@@ -1,9 +1,8 @@
 using System.Security.Claims;
 using System.Text.RegularExpressions;
-using ElixBackend.API.Helpers;
 using ElixBackend.Business.DTO;
+using ElixBackend.Business.Helpers;
 using ElixBackend.Business.IService;
-using ElixBackend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,12 +25,20 @@ namespace ElixBackend.API.Controllers
             }
 
             var passwordHasher = new PasswordHasher<UserDto>();
-            var result = passwordHasher.VerifyHashedPassword(userDto, userDto.Password, loginRequestDto.Password);
+
+            var storedHash = userDto.Password; 
+
+            var result = passwordHasher.VerifyHashedPassword(
+                userDto, 
+                storedHash, 
+                loginRequestDto.Password 
+            );
 
             if (result == PasswordVerificationResult.Failed)
             {
                 return Unauthorized("Email ou mot de passe invalide.");
             }
+            
             string token;
             string jti;
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];

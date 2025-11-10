@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ElixBackend.API.Helpers
+namespace ElixBackend.Business.Helpers
 {
     public static class JwtTokenGenerator
     {
@@ -17,12 +17,15 @@ namespace ElixBackend.API.Helpers
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(secretKey);
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId ?? ""),
+                new Claim(JwtRegisteredClaimNames.Jti, jti)
+            };
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity([
-                    new Claim(ClaimTypes.NameIdentifier, userId ?? ""),
-                    new Claim(JwtRegisteredClaimNames.Jti, jti)
-                ]),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)

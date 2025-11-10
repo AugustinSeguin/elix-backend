@@ -1,12 +1,12 @@
 @ElixBackend_HostAddress = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzIiwianRpIjoiOTIwZTA5YTAtMWI1Zi00OWNjLTg3ZjAtNGFkZmQ5NTBlNjhkIiwibmJmIjoxNzU5MzI1Nzk1LCJleHAiOjE3NTkzMzI5OTUsImlhdCI6MTc1OTMyNTc5NX0.wZ5xwGLJVv4zwhReKFJpErMRMkv23HxjCAgeOAUV6a0
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyIiwicm9sZSI6ImFkbWluIiwianRpIjoiZjk5YThlOTktMjIxMC00Mjg2LTkwY2ItNGMwZWJlZDdjODJkIiwibmJmIjoxNzYyNzgyOTM5LCJleHAiOjE3NjI3OTAxMzksImlhdCI6MTc2Mjc4MjkzOX0.gzDMcSWR0xGct_ki0Gnp_6VwmDvfXF0fRiBXLPB2ECs
 
 ### LOGIN
 POST {{ElixBackend_HostAddress}}/api/User/login
 Content-Type: application/json
 
 {
-  "email": "user1@email.com",
+  "email": "user@email.com",
   "password": "MotDePasse123"
 }
 
@@ -17,7 +17,7 @@ POST {{ElixBackend_HostAddress}}/api/User/register
 Content-Type: application/json
 
 {
-  "email": "user1@email.com",
+  "email": "us1er@email.com",
   "password": "MotDePasse123",
   "passwordRepeated": "MotDePasse123",
   "firstname": "John",
@@ -39,12 +39,12 @@ Authorization: Bearer {{token}}
 ###
 
 ### UPDATE USER (auth)
-PUT {{ElixBackend_HostAddress}}/api/User/2
+PUT {{ElixBackend_HostAddress}}/api/User/1
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "id": 2,
+  "id": 1,
   "email": "user@email.com",
   "password": "MotDePasse123",
   "passwordRepeated": "MotDePasse123",
@@ -61,7 +61,7 @@ Content-Type: application/json
 ###
 
 ### DELETE USER (auth)
-DELETE {{ElixBackend_HostAddress}}/api/User/2
+DELETE {{ElixBackend_HostAddress}}/api/User/1
 Authorization: Bearer {{token}}
 
 ###

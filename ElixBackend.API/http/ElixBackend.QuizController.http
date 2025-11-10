@@ -1,24 +1,20 @@
-# Requêtes pour tester les routes de QuizController
-# Variables :
-# - Remplace {{baseUrl}} par l'URL où ton API tourne (ex: http://localhost:5000 ou https://localhost:5001)
-# - Remplace {{jwt}} par un token JWT valide (les routes POST/PUT/DELETE nécessitent le rôle admin)
-
 @baseUrl = http://localhost:5000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwianRpIjoiZWY1NzBjODYtNjFhYi00NDg0LTg1ODktNmIzYjM2ODExZDZkIiwibmJmIjoxNzYyNzgzMjE2LCJleHAiOjE3NjI3OTA0MTYsImlhdCI6MTc2Mjc4MzIxNn0.nXqJqmvJ1Mp3xxhMBeH6_6PVynC8O4AxdUm2v0mnB-s
 
 ### Get all quizzes
 GET {{baseUrl}}/api/Quiz
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Get quiz by id
 GET {{baseUrl}}/api/Quiz/1
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Create a quiz (admin)
 POST {{baseUrl}}/api/Quiz
 Content-Type: application/json
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 
 {
   "title": "Exemple de quiz",
@@ -28,7 +24,7 @@ Authorization: Bearer {{jwt}}
 ### Update a quiz (admin)
 PUT {{baseUrl}}/api/Quiz/1
 Content-Type: application/json
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 
 {
   "id": 1,
@@ -38,5 +34,5 @@ Authorization: Bearer {{jwt}}
 
 ### Delete a quiz (admin)
 DELETE {{baseUrl}}/api/Quiz/1
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 
