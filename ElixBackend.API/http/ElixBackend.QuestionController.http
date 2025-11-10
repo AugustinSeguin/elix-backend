@@ -1,24 +1,20 @@
-# Requêtes pour tester les routes de QuestionController
-# Variables :
-# - Remplace {{baseUrl}} par l'URL où ton API tourne (ex: http://localhost:5000 ou https://localhost:5001)
-# - Remplace {{jwt}} par un token JWT valide (les routes POST/PUT/DELETE nécessitent le rôle admin)
-
-@baseUrl = http://localhost:5000
+@baseUrl = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwianRpIjoiZWY1NzBjODYtNjFhYi00NDg0LTg1ODktNmIzYjM2ODExZDZkIiwibmJmIjoxNzYyNzgzMjE2LCJleHAiOjE3NjI3OTA0MTYsImlhdCI6MTc2Mjc4MzIxNn0.nXqJqmvJ1Mp3xxhMBeH6_6PVynC8O4AxdUm2v0mnB-s
 
 ### Get all questions
 GET {{baseUrl}}/api/Question
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Get question by id
 GET {{baseUrl}}/api/Question/1
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ### Create a question (admin)
 POST {{baseUrl}}/api/Question
 Content-Type: application/json
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 
 {
   "title": "Exemple de question",
@@ -29,7 +25,7 @@ Authorization: Bearer {{jwt}}
 ### Update a question (admin)
 PUT {{baseUrl}}/api/Question/1
 Content-Type: application/json
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}
 
 {
   "id": 1,
@@ -40,4 +36,4 @@ Authorization: Bearer {{jwt}}
 
 ### Delete a question (admin)
 DELETE {{baseUrl}}/api/Question/1
-Authorization: Bearer {{jwt}}
+Authorization: Bearer {{token}}

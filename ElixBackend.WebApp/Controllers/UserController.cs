@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ElixBackend.API.Helpers;
 using ElixBackend.Business.DTO;
+using ElixBackend.Business.Helpers;
 using ElixBackend.Business.IService;
-using ElixBackend.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -15,17 +14,17 @@ public class UserController(
     ITokenService tokenService)
     : Controller
 {
-    [HttpGet("[action]")] 
+    [HttpGet("[action]")]
     [AllowAnonymous]
     public IActionResult Login()
     {
         return View();
     }
 
-    [HttpPost("[action]")] 
+    [HttpPost("[action]")]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login([FromForm] LoginRequestDto loginRequestDto) 
+    public async Task<IActionResult> Login([FromForm] LoginRequestDto loginRequestDto)
     {
         try
         {

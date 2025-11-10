@@ -1,15 +1,21 @@
+@baseUrl = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwianRpIjoiZWY1NzBjODYtNjFhYi00NDg0LTg1ODktNmIzYjM2ODExZDZkIiwibmJmIjoxNzYyNzgzMjE2LCJleHAiOjE3NjI3OTA0MTYsImlhdCI6MTc2Mjc4MzIxNn0.nXqJqmvJ1Mp3xxhMBeH6_6PVynC8O4AxdUm2v0mnB-s
+
 ### ArticleController - Obtenir tous les articles
-GET http://localhost:5000/api/Article
+GET {{baseUrl}}/api/Article
+Authorization: Bearer {{token}}
 Accept: application/json
 
 
 ### ArticleController - Obtenir un article par id (ex: 1)
-GET http://localhost:5000/api/Article/1
+GET {{baseUrl}}/api/Article/1
+Authorization: Bearer {{token}}
 Accept: application/json
 
 
 ### ArticleController - Créer un article
-POST http://localhost:5000/api/Article
+POST {{baseUrl}}/api/Article
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -22,7 +28,8 @@ Content-Type: application/json
 
 
 ### ArticleController - Mettre à jour un article (id=1)
-PUT http://localhost:5000/api/Article/1
+PUT {{baseUrl}}/api/Article/1
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -36,16 +43,5 @@ Content-Type: application/json
 
 
 ### ArticleController - Supprimer un article (id=1)
-DELETE http://localhost:5000/api/Article/1
-
-
-### Notes:
-# - Remplacez l'URL de base (http://localhost:5000) par l'adresse de votre API si nécessaire (Docker, Kestrel, HTTPS...).
-# - Pour les endpoints qui nécessitent une authentification (si applicable), ajoutez un header Authorization :
-
-# Authorization: Bearer <VOTRE_JWT>
-
-# Exemples curl rapides (optionnel):
-# curl -sS http://localhost:5000/api/Article
-# curl -sS -X POST http://localhost:5000/api/Article -H "Content-Type: application/json" -d '{"title":"T","content":"C"}'
-
+DELETE {{baseUrl}}/api/Article/1
+Authorization: Bearer {{token}}
