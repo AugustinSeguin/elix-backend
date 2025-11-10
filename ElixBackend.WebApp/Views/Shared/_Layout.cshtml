@@ -14,11 +14,21 @@
         <h1 class="h4 m-0">Elix backoffice</h1>
         <nav>
             <a class="text-white me-3" asp-controller="Home" asp-action="Index">Accueil</a>
-            <a class="text-white me-3" asp-controller="User" asp-action="Login">Connection</a>
             <a class="text-white me-3" asp-controller="Category" asp-action="Index">Categories</a>
             <a class="text-white me-3" asp-controller="Articles" asp-action="Index">Articles</a>
             <a class="text-white me-3" asp-controller="Questions" asp-action="Index">Questions</a>
             <a class="text-white me-3" asp-controller="Quizz" asp-action="Index">Quizz</a>
+            @if (User?.Identity?.IsAuthenticated ?? false)
+            {
+                <form asp-controller="User" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-link text-white me-3 p-0 align-baseline">Déconnexion</button>
+                </form>
+            }
+            else
+            {
+                <a class="text-white me-3" asp-controller="User" asp-action="Login">Connexion</a>
+            }
         </nav>
     </div>
 </header>

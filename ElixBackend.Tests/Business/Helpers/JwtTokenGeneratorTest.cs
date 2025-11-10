@@ -1,6 +1,6 @@
-using ElixBackend.API.Helpers;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using ElixBackend.Business.Helpers;
 
 namespace ElixBackend.Tests.Business.Helpers;
 

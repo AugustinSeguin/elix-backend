@@ -4,6 +4,7 @@ using ElixBackend.Infrastructure.IRepository;
 using ElixBackend.Infrastructure.Repository;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.Service;
+using ElixBackend.WebApp.Services; // for TokenPropagationHandler
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,10 +15,18 @@ builder.Services.AddControllersWithViews()
     .AddRazorRuntimeCompilation();
 builder.Services.AddRazorPages();
 
+// Injection de dépendances
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ITokenRepository, TokenRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<TokenPropagationHandler>();
+builder.Services.AddHttpClient("ApiClient")
+    .AddHttpMessageHandler<TokenPropagationHandler>();
 
 builder.Services.AddAuthentication("Cookies")
     .AddCookie("Cookies", options =>
@@ -35,15 +44,17 @@ if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local
 }
 
 app.UseHttpsRedirection();
-
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+// ✅ ROUTAGE MVC CLASSIQUE
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 await app.RunAsync();
