@@ -14,7 +14,7 @@ public class QuestionRepository(ElixDbContext context) : IQuestionRepository
 
     public async Task<Question?> GetQuestionByIdAsync(int id)
     {
-        return await context.Questions.FindAsync(id);
+        return await context.Questions.AsNoTracking().FirstOrDefaultAsync(q => q.Id == id);
     }
 
     public async Task<IEnumerable<Question>> GetAllQuestionsAsync()

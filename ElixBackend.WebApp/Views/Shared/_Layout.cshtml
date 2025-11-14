@@ -15,8 +15,8 @@
         <nav>
             <a class="text-white me-3" asp-controller="Home" asp-action="Index">Accueil</a>
             <a class="text-white me-3" asp-controller="Category" asp-action="Index">Categories</a>
-            <a class="text-white me-3" asp-controller="Articles" asp-action="Index">Articles</a>
-            <a class="text-white me-3" asp-controller="Questions" asp-action="Index">Questions</a>
+            <a class="text-white me-3" asp-controller="Article" asp-action="Index">Articles</a>
+            <a class="text-white me-3" asp-controller="Question" asp-action="Index">Questions</a>
             <a class="text-white me-3" asp-controller="Quizz" asp-action="Index">Quizz</a>
             @if (User?.Identity?.IsAuthenticated ?? false)
             {

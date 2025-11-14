@@ -58,6 +58,36 @@ public class AnswerServiceTest
     }
 
     [Test]
+    public async Task GetByQuestionIdAsync_ReturnsDtosForQuestion()
+    {
+        var answers = new List<Answer>
+        {
+            new() { Id = 10, Title = "Answer1", QuestionId = 5, IsValid = true, Explanation = "exp1" },
+            new() { Id = 11, Title = "Answer2", QuestionId = 5, IsValid = false, Explanation = "exp2" }
+        };
+        _answerRepositoryMock.Setup(r => r.GetByQuestionIdAsync(5)).ReturnsAsync(answers);
+        
+        var result = await _service.GetByQuestionIdAsync(5);
+        
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.All(d => d.QuestionId == 5), Is.True);
+        Assert.That(result.Any(d => d.Title == "Answer1"), Is.True);
+        Assert.That(result.Any(d => d.Title == "Answer2"), Is.True);
+        _answerRepositoryMock.Verify(r => r.GetByQuestionIdAsync(5), Times.Once);
+    }
+
+    [Test]
+    public async Task GetByQuestionIdAsync_ReturnsEmptyWhenNoQuestionMatch()
+    {
+        _answerRepositoryMock.Setup(r => r.GetByQuestionIdAsync(999)).ReturnsAsync(new List<Answer>());
+        
+        var result = await _service.GetByQuestionIdAsync(999);
+        
+        Assert.That(result.Count(), Is.EqualTo(0));
+        _answerRepositoryMock.Verify(r => r.GetByQuestionIdAsync(999), Times.Once);
+    }
+
+    [Test]
     public async Task AddAsync_CallsRepositoryWithCorrectEntity()
     {
         var dto = new AnswerDto { Id = 1, Title = "A", QuestionId = 2, IsValid = true, Explanation = "exp" };

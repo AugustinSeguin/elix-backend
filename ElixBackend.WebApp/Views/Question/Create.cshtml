@@ -1,0 +1,87 @@
+@model ElixBackend.Business.DTO.QuestionDto
+
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Créer une question";
+    var categories = ViewBag.Categories as IEnumerable<SelectListItem> ??
+                     (ViewBag.Categories as SelectList)?.Items?.Cast<SelectListItem>() ??
+                     Enumerable.Empty<SelectListItem>();
+    var categoriesList = categories.ToList();
+    var categoriesSelectList = new SelectList(categoriesList, "Value", "Text", Model?.CategoryId.ToString());
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h2>Créer une question</h2>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mt-3 text-center">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-controller="Question" asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Titre</label>
+                <input asp-for="Title" name="Title" class="form-control"/>
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Catégorie</label>
+                @Html.DropDownListFor(model => model.CategoryId, (IEnumerable<SelectListItem>)ViewBag.Categories ?? categoriesSelectList, "-- Sélectionner --", new { @class = "form-control" })
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Média (optionnel)</label>
+                <input type="file" name="mediaFile" id="mediaFile" class="form-control" accept="image/*,video/*" onchange="previewMedia(this)"/>
+                <small class="form-text text-muted">Formats acceptés : Images (JPG, PNG, GIF) ou Vidéos (MP4, WEBM)</small>
+                <input type="hidden" asp-for="MediaPath" id="mediaPathHidden"/>
+                <div id="mediaPreview" class="mt-2"></div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="/Question/Index" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Créer</button>
+            </div>
+        </form>
+
+        <div class="alert alert-info mt-4">
+            <strong>Note :</strong> Vous pourrez ajouter des réponses après avoir créé la question.
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        function previewMedia(input) {
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileType = file.type;
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (fileType.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" alt="Aperçu image">`;
+                    } else if (fileType.startsWith('video/')) {
+                        preview.innerHTML = `<video controls class="img-thumbnail" style="max-width: 300px; max-height: 300px;"><source src="${e.target.result}" type="${fileType}">Votre navigateur ne supporte pas la vidéo.</video>`;
+                    }
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

@@ -18,6 +18,12 @@ public class AnswerService(IAnswerRepository answerRepository) : IAnswerService
         var answers = await answerRepository.GetAllAsync();
         return answers.Select(ToDto);
     }
+    
+    public async Task<IEnumerable<AnswerDto>> GetByQuestionIdAsync(int questionId)
+    {
+        var answers = await answerRepository.GetByQuestionIdAsync(questionId);
+        return answers.Select(ToDto);
+    }
 
     public async Task AddAsync(AnswerDto answerDto)
     {

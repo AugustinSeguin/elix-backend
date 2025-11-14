@@ -6,6 +6,9 @@ public interface IAnswerService
 {
     Task<AnswerDto?> GetByIdAsync(int id);
     Task<IEnumerable<AnswerDto>> GetAllAsync();
+
+    Task<IEnumerable<AnswerDto>> GetByQuestionIdAsync(int questionId);
+
     Task AddAsync(AnswerDto answerDto);
     Task UpdateAsync(AnswerDto answerDto);
     Task DeleteAsync(int id);
