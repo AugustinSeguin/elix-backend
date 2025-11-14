@@ -67,6 +67,32 @@ public class AnswerRepositoryTest
     }
 
     [Test]
+    public async Task GetByQuestionIdAsync_ReturnsAnswersForQuestion()
+    {
+        await _repository.AddAsync(new Answer { Id = 10, Title = "Answer1", QuestionId = 5, IsValid = true });
+        await _repository.AddAsync(new Answer { Id = 11, Title = "Answer2", QuestionId = 5, IsValid = false });
+        await _repository.AddAsync(new Answer { Id = 12, Title = "Answer3", QuestionId = 6, IsValid = true });
+        
+        var result = await _repository.GetByQuestionIdAsync(5);
+        
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.All(a => a.QuestionId == 5), Is.True);
+        Assert.That(result.Any(a => a.Title == "Answer1"), Is.True);
+        Assert.That(result.Any(a => a.Title == "Answer2"), Is.True);
+    }
+
+    [Test]
+    public async Task GetByQuestionIdAsync_ReturnsEmptyWhenNoQuestionMatch()
+    {
+        await _repository.AddAsync(new Answer { Id = 20, Title = "Answer1", QuestionId = 1, IsValid = true });
+        await _repository.AddAsync(new Answer { Id = 21, Title = "Answer2", QuestionId = 2, IsValid = false });
+        
+        var result = await _repository.GetByQuestionIdAsync(999);
+        
+        Assert.That(result.Count(), Is.EqualTo(0));
+    }
+
+    [Test]
     public async Task UpdateAsync_UpdatesAnswer()
     {
         var answer = new Answer { Id = 5, Title = "Ancien", QuestionId = 1, IsValid = false };

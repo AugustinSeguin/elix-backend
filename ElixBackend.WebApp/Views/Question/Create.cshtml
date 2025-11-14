@@ -1,11 +1,9 @@
 @model ElixBackend.Business.DTO.QuestionDto
 
-@using Microsoft.AspNetCore.Mvc.Rendering
 @using System.Linq
 
 @{
     ViewData["Title"] = "Créer une question";
-    // Récupère et cast proprement les categories passées via ViewBag.Categories
     var categories = ViewBag.Categories as IEnumerable<SelectListItem> ??
                      (ViewBag.Categories as SelectList)?.Items?.Cast<SelectListItem>() ??
                      Enumerable.Empty<SelectListItem>();
@@ -27,38 +25,63 @@
             </div>
         }
 
-        <form asp-controller="Question" asp-action="Create" method="post">
+        <form asp-controller="Question" asp-action="Create" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
 
             <div class="mb-3">
                 <label asp-for="Title" class="form-label">Titre</label>
-                <input asp-for="Title" class="form-control" />
+                <input asp-for="Title" name="Title" class="form-control"/>
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="CategoryId" class="form-label">Catégorie</label>
-                @* Utilisation d'asp-items pour générer proprement les options *@
-                <select asp-for="CategoryId" class="form-control" asp-items="@categoriesSelectList">
-                    <option value="">-- Sélectionner --</option>
-                </select>
+                @Html.DropDownListFor(model => model.CategoryId, (IEnumerable<SelectListItem>)ViewBag.Categories ?? categoriesSelectList, "-- Sélectionner --", new { @class = "form-control" })
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="MediaPath" class="form-label">Chemin du média (optionnel)</label>
-                <input asp-for="MediaPath" class="form-control" />
-                <span asp-validation-for="MediaPath" class="text-danger"></span>
+                <label class="form-label">Média (optionnel)</label>
+                <input type="file" name="mediaFile" id="mediaFile" class="form-control" accept="image/*,video/*" onchange="previewMedia(this)"/>
+                <small class="form-text text-muted">Formats acceptés : Images (JPG, PNG, GIF) ou Vidéos (MP4, WEBM)</small>
+                <input type="hidden" asp-for="MediaPath" id="mediaPathHidden"/>
+                <div id="mediaPreview" class="mt-2"></div>
             </div>
 
             <div class="d-flex justify-content-between">
-                <a asp-action="Index" asp-controller="Question" class="btn btn-secondary">Annuler</a>
+                <a href="/Question/Index" class="btn btn-secondary">Annuler</a>
                 <button type="submit" class="btn btn-primary">Créer</button>
             </div>
         </form>
+
+        <div class="alert alert-info mt-4">
+            <strong>Note :</strong> Vous pourrez ajouter des réponses après avoir créé la question.
+        </div>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        function previewMedia(input) {
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileType = file.type;
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (fileType.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" alt="Aperçu image">`;
+                    } else if (fileType.startsWith('video/')) {
+                        preview.innerHTML = `<video controls class="img-thumbnail" style="max-width: 300px; max-height: 300px;"><source src="${e.target.result}" type="${fileType}">Votre navigateur ne supporte pas la vidéo.</video>`;
+                    }
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 }

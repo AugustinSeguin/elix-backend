@@ -16,6 +16,11 @@ public class AnswerRepository(ElixDbContext context) : IAnswerRepository
         return await context.Set<Answer>().ToListAsync();
     }
 
+    public async Task<IEnumerable<Answer>> GetByQuestionIdAsync(int questionId)
+    {
+        return await context.Set<Answer>().Where(a => a.QuestionId == questionId).ToListAsync();
+    }
+    
     public async Task AddAsync(Answer answer)
     {
         await context.Set<Answer>().AddAsync(answer);

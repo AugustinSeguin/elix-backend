@@ -1,0 +1,58 @@
+@model ElixBackend.Business.DTO.AnswerDto
+
+@{
+    var isEdit = Model?.Id > 0;
+    var modalTitle = isEdit ? "Modifier la réponse" : "Nouvelle réponse";
+    var submitText = isEdit ? "Enregistrer" : "Créer";
+    var formAction = isEdit ? "/Answer/Edit" : "/Answer/Create";
+}
+
+<div class="modal fade" id="answerFormModal" tabindex="-1" aria-labelledby="answerFormModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="@formAction" method="post" id="answerForm">
+                @Html.AntiForgeryToken()
+
+                @if (isEdit)
+                {
+                    <input type="hidden" asp-for="Id" name="Id" value="@Model.Id" />
+                }
+                <input type="hidden" asp-for="QuestionId" name="QuestionId" value="@Model.QuestionId"/>
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="answerFormModalLabel">@modalTitle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label">Titre</label>
+                        <input asp-for="Title" name="Title" class="form-control" required value="@Model?.Title"/>
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Explanation" class="form-label">Explication</label>
+                        <textarea asp-for="Explanation" name="Explanation" class="form-control" rows="3">@Model?.Explanation</textarea>
+                        <span asp-validation-for="Explanation" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="hidden" name="IsValid" value="false"/>
+                        <input asp-for="IsValid" name="IsValid" class="form-check-input" type="checkbox" value="true" @(Model?.IsValid == true ? "checked" : "")/>
+                        <label asp-for="IsValid" class="form-check-label">
+                            Cette réponse est valide
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">@submitText</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+

@@ -1,11 +1,9 @@
 @model ElixBackend.Business.DTO.QuestionDto
 
-@using Microsoft.AspNetCore.Mvc.Rendering
 @using System.Linq
 
 @{
-    ViewData["Title"] = "Créer une question";
-    // Récupère et cast proprement les categories passées via ViewBag.Categories
+    ViewData["Title"] = "Editer une question";
     var categories = ViewBag.Categories as IEnumerable<SelectListItem> ??
                      (ViewBag.Categories as SelectList)?.Items?.Cast<SelectListItem>() ??
                      Enumerable.Empty<SelectListItem>();
@@ -27,45 +25,192 @@
             </div>
         }
 
-        <form asp-controller="Question" asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <form asp-controller="Question" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data">
             @Html.AntiForgeryToken()
-            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="Id"/>
 
             <div class="mb-3">
                 <label asp-for="Title" class="form-label">Titre</label>
-                <input asp-for="Title" class="form-control" />
+                <input asp-for="Title" name="Title" class="form-control" value="@Model?.Title"/>
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
                 <label asp-for="CategoryId" class="form-label">Catégorie</label>
-                <select asp-for="CategoryId" class="form-control" asp-items="@categoriesSelectList">
-                    <option value="">-- Sélectionner --</option>
-                    {
-                        @foreach (var c in categories)
-                        {
-                            var selected = Model != null && Model.CategoryId.ToString() == c.Value ? "selected" : string.Empty;
-                            <option value="@c.Value" @Html.Raw(selected)>@c.Text</option>
-                        }
-                    }
-                </select>
+                @Html.DropDownListFor(model => model.CategoryId, (IEnumerable<SelectListItem>)ViewBag.Categories ?? categoriesSelectList, "-- Sélectionner --", new { @class = "form-control" })
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
 
             <div class="mb-3">
-                <label asp-for="Description" class="form-label">Description</label>
-                <textarea asp-for="Description" name="Description"  class="form-control" rows="4">@Model?.MediaPath</textarea>
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <label class="form-label">Média (optionnel)</label>
+                @if (!string.IsNullOrEmpty(Model?.MediaPath))
+                {
+                    <div class="mb-2">
+                        <strong>Média actuel :</strong>
+                        @if (Model.MediaPath.EndsWith(".mp4") || Model.MediaPath.EndsWith(".webm"))
+                        {
+                            <video controls class="img-thumbnail d-block" style="max-width: 300px; max-height: 300px;">
+                                <source src="@Model.MediaPath" type="video/@(Model.MediaPath.EndsWith(".mp4") ? "mp4" : "webm")">
+                            </video>
+                        }
+                        else
+                        {
+                            <img src="@Model.MediaPath" class="img-thumbnail d-block" style="max-width: 300px; max-height: 300px;" alt="Média actuel">
+                        }
+                    </div>
+                }
+                <input type="file" name="mediaFile" id="mediaFile" class="form-control" accept="image/*,video/*" onchange="previewMedia(this)"/>
+                <small class="form-text text-muted">Formats acceptés : Images (JPG, PNG, GIF) ou Vidéos (MP4, WEBM). Laisser vide pour conserver le média actuel.</small>
+                <input type="hidden" asp-for="MediaPath" id="mediaPathHidden"/>
+                <div id="mediaPreview" class="mt-2"></div>
             </div>
 
             <div class="d-flex justify-content-between">
-                <a asp-action="Index" asp-controller="Question" class="btn btn-secondary">Annuler</a>
+                <a href="/Question/Index" class="btn btn-secondary">Annuler</a>
                 <button type="submit" class="btn btn-primary">Enregistrer</button>
             </div>
         </form>
+
+        <hr class="my-4"/>
+
+        @{
+            var answers = (ViewBag.Answers as IEnumerable<ElixBackend.Business.DTO.AnswerDto>) ?? Enumerable.Empty<ElixBackend.Business.DTO.AnswerDto>();
+            var answersList = answers.ToList();
+            var questionId = ViewBag.QuestionId ?? 0;
+        }
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Réponses</h2>
+            <button type="button" class="btn btn-primary" onclick="openAnswerModal(0, @questionId)">Nouvelle réponse
+            </button>
+        </div>
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Titre</th>
+                <th>Explication</th>
+                <th>Valide</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            @if (answersList.Any())
+            {
+                foreach (var answer in answersList)
+                {
+                    <tr>
+                        <td>@answer.Title</td>
+                        <td>@answer.Explanation</td>
+                        <td>@(answer.IsValid ? "Oui" : "Non")</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-secondary me-1"
+                                    onclick="openAnswerModal(@answer.Id, @answer.QuestionId)">Modifier
+                            </button>
+                            <form action="@Url.Action("Delete", "Answer", new { id = answer.Id })"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Confirmer la suppression de cette réponse ?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="4" class="text-center">Aucune réponse trouvée.</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+
+        <div id="answerModalContainer"></div>
+    </div>
+
+    <div class="alert alert-warning mt-4">
+        <strong>Attention :</strong> Vous devez configurer une seule réponse valide pour chaque question.
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        function previewMedia(input) {
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileType = file.type;
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (fileType.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" alt="Aperçu image">`;
+                    } else if (fileType.startsWith('video/')) {
+                        preview.innerHTML = `<video controls class="img-thumbnail" style="max-width: 300px; max-height: 300px;"><source src="${e.target.result}" type="${fileType}">Votre navigateur ne supporte pas la vidéo.</video>`;
+                    }
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        async function openAnswerModal(answerId, questionId) {
+            try {
+                const url = answerId > 0
+                    ? `/Answer/GetFormModal?id=${answerId}`
+                    : `/Answer/GetFormModal?questionId=${questionId}`;
+
+                const response = await fetch(url);
+                const html = await response.text();
+
+                document.getElementById('answerModalContainer').innerHTML = html;
+
+                const modal = new bootstrap.Modal(document.getElementById('answerFormModal'));
+                modal.show();
+
+                // Attacher l'événement de soumission au formulaire
+                const form = document.getElementById('answerForm');
+                if (form) {
+                    // Validation jQuery si disponible
+                    if (typeof window.jQuery !== 'undefined' && window.jQuery.validator && window.jQuery.validator.unobtrusive) {
+                        window.jQuery.validator.unobtrusive.parse(form);
+                    }
+
+                    // Intercepter la soumission du formulaire
+                    form.addEventListener('submit', async function (e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(form);
+                        const action = form.getAttribute('action');
+
+                        try {
+                            const submitResponse = await fetch(action, {
+                                method: 'POST',
+                                body: formData
+                            });
+
+                            if (submitResponse.ok) {
+                                // Fermer la modale
+                                modal.hide();
+                                // Recharger la page pour afficher la nouvelle réponse
+                                window.location.reload();
+                            } else {
+                                alert('Erreur lors de la sauvegarde de la réponse');
+                            }
+                        } catch (error) {
+                            console.error('Erreur lors de la soumission:', error);
+                            alert('Erreur lors de la sauvegarde de la réponse');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Erreur lors du chargement de la modale:', error);
+            }
+        }
+    </script>
 }
