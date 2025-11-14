@@ -1,0 +1,62 @@
+@model IEnumerable<ElixBackend.Business.DTO.UserDto>
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+
+@{
+    ViewData["Title"] = "Utilisateurs";
+    var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<meta name="csrf-token" content="@antiToken"/>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Utilisateurs</h2>
+    <a href='@Url.Action("Create", "User")' class="btn btn-primary">Nouvel utilisateur</a>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+    <div class="alert alert-info">Aucun utilisateur trouvé.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var user in Model)
+        {
+            <div class="col" id="user-@user.Id">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@user.Username</h5>
+                        <p class="card-text">
+                            <strong>Email:</strong> @user.Email<br/>
+                            @if (!string.IsNullOrEmpty(user.Firstname) || !string.IsNullOrEmpty(user.Lastname))
+                            {
+                                <strong>Nom:</strong> @user.Firstname @user.Lastname<br/>
+                            }
+                            @if (user.IsAdmin)
+                            {
+                                <span class="badge bg-danger">Admin</span>
+                            }
+                            @if (user.IsPremium)
+                            {
+                                <span class="badge bg-warning">Premium</span>
+                            }
+                        </p>
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <a href='@Url.Action("Edit", "User", new { id = user.Id })'
+                               class="btn btn-sm btn-outline-secondary">Modifier</a>
+                            <form action="@Url.Action("Delete", "User", new { id = user.Id })"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Confirmer la suppression de cet utilisateur ?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+

@@ -1,0 +1,112 @@
+@model ElixBackend.Business.DTO.ArticleDto
+
+@{
+    ViewData["Title"] = "Modifier l'article";
+    var categoriesList = ViewBag.Categories as IEnumerable<SelectListItem> ?? new List<SelectListItem>();
+    var categoriesSelectList = new SelectList(categoriesList, "Value", "Text", Model?.CategoryId.ToString());
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1 class="mb-4">Modifier l'article</h1>
+            
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger mt-3 text-center">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@error.ErrorMessage</div>
+                    }
+                </div>
+            }
+
+            <form asp-controller="Article" asp-action="Edit" asp-route-id="@Model?.Id" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id"/>
+
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label">Titre</label>
+                    <input asp-for="Title" name="Title" class="form-control" value="@Model?.Title" required/>
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Subtitle" class="form-label">Sous-titre (optionnel)</label>
+                    <input asp-for="Subtitle" name="Subtitle" class="form-control" value="@Model?.Subtitle"/>
+                    <span asp-validation-for="Subtitle" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Content" class="form-label">Contenu</label>
+                    <textarea asp-for="Content" name="Content" class="form-control" rows="10" required>@Model?.Content</textarea>
+                    <span asp-validation-for="Content" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CategoryId" class="form-label">Catégorie</label>
+                    @Html.DropDownListFor(model => model.CategoryId, (IEnumerable<SelectListItem>)ViewBag.Categories ?? categoriesSelectList, "-- Sélectionner --", new { @class = "form-control" })
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Média (optionnel)</label>
+                    @if (!string.IsNullOrEmpty(Model?.MediaPath))
+                    {
+                        <div class="mb-2">
+                            <strong>Média actuel :</strong>
+                            @if (Model.MediaPath.EndsWith(".mp4") || Model.MediaPath.EndsWith(".webm"))
+                            {
+                                <video controls class="img-thumbnail d-block" style="max-width: 300px; max-height: 300px;">
+                                    <source src="@Model.MediaPath" type="video/@(Model.MediaPath.EndsWith(".mp4") ? "mp4" : "webm")">
+                                </video>
+                            }
+                            else
+                            {
+                                <img src="@Model.MediaPath" class="img-thumbnail d-block" style="max-width: 300px; max-height: 300px;" alt="Média actuel">
+                            }
+                        </div>
+                    }
+                    <input type="file" name="mediaFile" id="mediaFile" class="form-control" accept="image/*,video/*" onchange="previewMedia(this)"/>
+                    <small class="form-text text-muted">Formats acceptés : Images (JPG, PNG, GIF) ou Vidéos (MP4, WEBM). Laisser vide pour conserver le média actuel.</small>
+                    <input type="hidden" asp-for="MediaPath" id="mediaPathHidden"/>
+                    <div id="mediaPreview" class="mt-2"></div>
+                </div>
+
+                <div class="mb-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <a href="/Article/Index" class="btn btn-secondary">Annuler</a>
+                </div>
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+    <script>
+        function previewMedia(input) {
+            const preview = document.getElementById('mediaPreview');
+            preview.innerHTML = '';
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const fileType = file.type;
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    if (fileType.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" alt="Aperçu image">`;
+                    } else if (fileType.startsWith('video/')) {
+                        preview.innerHTML = `<video controls class="img-thumbnail" style="max-width: 300px; max-height: 300px;"><source src="${e.target.result}" type="${fileType}">Votre navigateur ne supporte pas la vidéo.</video>`;
+                    }
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}
+

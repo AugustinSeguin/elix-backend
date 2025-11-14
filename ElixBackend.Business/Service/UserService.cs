@@ -24,7 +24,8 @@ namespace ElixBackend.Business.Service
                 Gender = user.Gender,
                 IsPremium = user.IsPremium,
                 PhoneNumber = user.PhoneNumber,
-                IsAdmin = user.IsAdmin
+                IsAdmin = user.IsAdmin,
+                PictureMediaPath = user.PictureMediaPath
             };
         }
 

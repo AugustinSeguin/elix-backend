@@ -1,0 +1,60 @@
+@model IEnumerable<ElixBackend.Business.DTO.ArticleDto>
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+
+@{
+    ViewData["Title"] = "Articles";
+    var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
+}
+
+<meta name="csrf-token" content="@antiToken"/>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Articles</h2>
+    <a href='@Url.Action("Create", "Article")' class="btn btn-primary">Nouvel article</a>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+    <div class="alert alert-info">Aucun article trouvé.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var article in Model)
+        {
+            <div class="col" id="article-@article.Id">
+                <div class="card h-100">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@article.Title</h5>
+                        @if (!string.IsNullOrEmpty(article.Subtitle))
+                        {
+                            <h6 class="card-subtitle mb-2 text-muted">@article.Subtitle</h6>
+                        }
+                        @if (!string.IsNullOrEmpty(article.Category?.Title))
+                        {
+                            <p class="card-text"><small
+                                    class="text-muted"><strong>Catégorie:</strong> @article.Category.Title</small></p>
+                        }
+                        @if (!string.IsNullOrEmpty(article.Content))
+                        {
+                            <p class="card-text">@(article.Content.Length > 100 ? article.Content.Substring(0, 100) + "..." : article.Content)</p>
+                        }
+                        <div class="mt-auto d-flex justify-content-between align-items-center">
+                            <a href='@Url.Action("Edit", "Article", new { id = article.Id })'
+                               class="btn btn-sm btn-outline-secondary">Modifier</a>
+                            <form action="@Url.Action("Delete", "Article", new { id = article.Id })"
+                                  method="post"
+                                  class="d-inline"
+                                  onsubmit="return confirm('Confirmer la suppression de cet article ?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+

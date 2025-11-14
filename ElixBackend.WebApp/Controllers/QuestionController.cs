@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.DTO;
-using Microsoft.AspNetCore.Razor.TagHelpers;
+using ElixBackend.Business.Helpers;
 
 namespace ElixBackend.WebApp.Controllers;
 
@@ -21,47 +21,6 @@ public class QuestionController(
         ViewBag.Categories = new SelectList(categories, "Id", "Title", selectedId);
     }
 
-    private async Task<string?> HandleMediaUploadAsync(IFormFile? mediaFile, string? existingMediaPath = null)
-    {
-        if (mediaFile == null || mediaFile.Length == 0)
-        {
-            return existingMediaPath;
-        }
-
-        var uploadsPath = configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
-        
-        var uploadsFolder = Path.IsPathRooted(uploadsPath) 
-            ? uploadsPath 
-            : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
-            
-        if (!Directory.Exists(uploadsFolder))
-        {
-            Directory.CreateDirectory(uploadsFolder);
-        }
-
-        var uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(mediaFile.FileName);
-        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-        await using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await mediaFile.CopyToAsync(stream);
-        }
-
-        if (!string.IsNullOrEmpty(existingMediaPath))
-        {
-            var oldFileName = Path.GetFileName(existingMediaPath);
-            var oldFilePath = Path.IsPathRooted(uploadsPath)
-                ? Path.Combine(uploadsPath, oldFileName)
-                : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath, oldFileName);
-                
-            if (System.IO.File.Exists(oldFilePath))
-            {
-                System.IO.File.Delete(oldFilePath);
-            }
-        }
-
-        return Path.Combine(uploadsPath, filePath);
-    }
 
     [HttpGet("[action]")]
     public async Task<IActionResult> Index()
@@ -109,7 +68,7 @@ public class QuestionController(
 
         try
         {
-            questionDto.MediaPath = await HandleMediaUploadAsync(mediaFile);
+            questionDto.MediaPath = await MediaHelper.HandleMediaUploadAsync(mediaFile, configuration);
             await questionService.AddQuestionAsync(questionDto);
             return RedirectToAction("Index");
         }
@@ -140,7 +99,7 @@ public class QuestionController(
         try
         {
             var existingQuestion = await questionService.GetQuestionByIdAsync(questionDto.Id);
-            questionDto.MediaPath = await HandleMediaUploadAsync(mediaFile, existingQuestion?.MediaPath);
+            questionDto.MediaPath = await MediaHelper.HandleMediaUploadAsync(mediaFile, configuration, existingQuestion?.MediaPath);
             
             await questionService.UpdateQuestionAsync(questionDto);
             return RedirectToAction("Index");

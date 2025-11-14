@@ -11,7 +11,7 @@ public class ElixDbContext(DbContextOptions<ElixDbContext> options) : DbContext(
 
     public DbSet<Answer> Answers { get; set; }
     public DbSet<UserToken> UserTokens { get; set; }
-    
+
     public DbSet<Quiz> Quizzes { get; set; }
 
     public DbSet<Article> Articles { get; set; }
@@ -19,8 +19,17 @@ public class ElixDbContext(DbContextOptions<ElixDbContext> options) : DbContext(
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
         modelBuilder.Entity<User>()
             .Property(u => u.Gender)
             .HasConversion<string>();
+        
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
     }
 }

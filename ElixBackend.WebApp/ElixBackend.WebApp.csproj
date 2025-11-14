@@ -30,4 +30,10 @@
       <_ContentIncludedByDefault Remove="Views\User\Login.cshtml" />
     </ItemGroup>
 
+    <ItemGroup>
+      <AdditionalFiles Include="Views\Article\Create.cshtml" />
+      <AdditionalFiles Include="Views\Article\Edit.cshtml" />
+      <AdditionalFiles Include="Views\Article\Index.cshtml" />
+    </ItemGroup>
+
 </Project>

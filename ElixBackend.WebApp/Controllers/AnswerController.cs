@@ -7,7 +7,7 @@ namespace ElixBackend.WebApp.Controllers;
 
 [Authorize]
 [Route("[controller]")]
-public class AnswerController(IAnswerService answerService, IQuestionService questionService) : Controller
+public class AnswerController(IAnswerService answerService) : Controller
 {
     [HttpGet("[action]")]
     public async Task<IActionResult> Index(int? questionId)
