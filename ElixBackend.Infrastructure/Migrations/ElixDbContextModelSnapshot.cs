@@ -111,6 +111,9 @@ namespace ElixBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("MediaPath")
                         .HasColumnType("text");
 
@@ -119,6 +122,8 @@ namespace ElixBackend.Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Questions");
                 });
@@ -227,6 +232,17 @@ namespace ElixBackend.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("ElixBackend.Domain.Entities.Article", b =>
+                {
+                    b.HasOne("ElixBackend.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("ElixBackend.Domain.Entities.Question", b =>
                 {
                     b.HasOne("ElixBackend.Domain.Entities.Category", "Category")
                         .WithMany()

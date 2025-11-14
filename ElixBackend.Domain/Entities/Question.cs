@@ -7,4 +7,7 @@ public class Question
     public required string Title { get; set; }
 
     public string? MediaPath { get; set; }
+    
+    public int CategoryId { get; set; }
+    public Category? Category { get; set; }
 }

@@ -1,0 +1,64 @@
+@model ElixBackend.Business.DTO.QuestionDto
+
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Créer une question";
+    // Récupère et cast proprement les categories passées via ViewBag.Categories
+    var categories = ViewBag.Categories as IEnumerable<SelectListItem> ??
+                     (ViewBag.Categories as SelectList)?.Items?.Cast<SelectListItem>() ??
+                     Enumerable.Empty<SelectListItem>();
+    var categoriesList = categories.ToList();
+    var categoriesSelectList = new SelectList(categoriesList, "Value", "Text", Model?.CategoryId.ToString());
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h2>Créer une question</h2>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mt-3 text-center">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-controller="Question" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label">Titre</label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label">Catégorie</label>
+                @* Utilisation d'asp-items pour générer proprement les options *@
+                <select asp-for="CategoryId" class="form-control" asp-items="@categoriesSelectList">
+                    <option value="">-- Sélectionner --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="MediaPath" class="form-label">Chemin du média (optionnel)</label>
+                <input asp-for="MediaPath" class="form-control" />
+                <span asp-validation-for="MediaPath" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a asp-action="Index" asp-controller="Question" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Créer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
