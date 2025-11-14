@@ -117,7 +117,7 @@ namespace ElixBackend.API.Controllers
         // PUT: api/User/{id}
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDto userDto)
+        public async Task<IActionResult> UpdateUserAsync(int id, [FromForm] UserDto userDto, IFormFile? pictureFile)
         {
             if (id != userDto.Id)
                 return BadRequest("L'ID dans l'URL doit correspondre à l'ID de l'utilisateur.");
@@ -132,6 +132,15 @@ namespace ElixBackend.API.Controllers
             var existingUser = await userService.GetUserByIdAsync(id);
             if (existingUser == null)
                 return NotFound();
+
+            if (pictureFile is { Length: > 0 })
+            {
+                userDto.PictureMediaPath = await MediaHelper.HandleMediaUploadAsync(pictureFile, configuration);
+            }
+            else
+            {
+                userDto.PictureMediaPath = existingUser.PictureMediaPath;
+            }
 
             var user = await userService.UpdateUserAsync(userDto);
             return Ok(user);

@@ -13,7 +13,6 @@ namespace ElixBackend.Tests.WebApp.Controllers;
 public class AnswerControllerTest
 {
     private Mock<IAnswerService> _answerServiceMock;
-    private Mock<IQuestionService> _questionServiceMock;
     private AnswerController _controller;
 
     [SetUp]
@@ -21,7 +20,7 @@ public class AnswerControllerTest
     {
         _answerServiceMock = new Mock<IAnswerService>();
         _questionServiceMock = new Mock<IQuestionService>();
-        _controller = new AnswerController(_answerServiceMock.Object, _questionServiceMock.Object);
+        _controller = new AnswerController(_answerServiceMock.Object);
         
         // Setup TempData and HttpContext
         var httpContext = new DefaultHttpContext();

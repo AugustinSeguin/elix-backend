@@ -1,4 +1,7 @@
-namespace ElixBackend.WebApp.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+
+namespace ElixBackend.Business.Helpers;
 
 public static class MediaHelper
 {

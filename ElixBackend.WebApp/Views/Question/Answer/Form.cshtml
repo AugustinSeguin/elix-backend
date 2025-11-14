@@ -15,9 +15,9 @@
 
                 @if (isEdit)
                 {
-                    <input type="hidden" asp-for="Id" name="Id" value="@Model.Id" />
+                    <input type="hidden" asp-for="Id" name="Id" value="@Model?.Id" />
                 }
-                <input type="hidden" asp-for="QuestionId" name="QuestionId" value="@Model.QuestionId"/>
+                <input type="hidden" asp-for="QuestionId" name="QuestionId" value="@Model?.QuestionId"/>
 
                 <div class="modal-header">
                     <h5 class="modal-title" id="answerFormModalLabel">@modalTitle</h5>

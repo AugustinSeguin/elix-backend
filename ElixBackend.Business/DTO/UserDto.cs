@@ -19,6 +19,9 @@ namespace ElixBackend.Business.DTO
         public int? PhoneNumber { get; set; }
         public bool IsAdmin { get; set; } = false;
 
+        public string? PictureMediaPath { get; set; }
+
+
         public User UserDtoToUser(UserDto userDto)
         {
             return new User
@@ -33,9 +36,9 @@ namespace ElixBackend.Business.DTO
                 IsPremium = userDto.IsPremium,
                 PasswordHash = userDto.Password,
                 PhoneNumber = userDto.PhoneNumber,
-                IsAdmin = userDto.IsAdmin
+                IsAdmin = userDto.IsAdmin,
+                PictureMediaPath = userDto.PictureMediaPath
             };
         }
-
     }
 }

@@ -16,6 +16,8 @@ namespace ElixBackend.Domain.Entities
         
         public int? PhoneNumber { get; set; }
         
+        public string? PictureMediaPath { get; set; }
+        
         public bool IsAdmin { get; set; } = false;
 
         public ICollection<UserToken> Tokens { get; set; } = new List<UserToken>();
