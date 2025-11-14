@@ -1,0 +1,100 @@
+@model ElixBackend.Business.DTO.UserDto
+
+@{
+    ViewData["Title"] = "Créer un utilisateur";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <h1 class="mb-4">Créer un utilisateur</h1>
+
+            <form asp-controller="User" asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label asp-for="Username" class="form-label">Nom d'utilisateur</label>
+                    <input asp-for="Username" name="Username" class="form-control" required/>
+                    <span asp-validation-for="Username" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label">Email</label>
+                    <input asp-for="Email" name="Email" type="email" class="form-control" required/>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">Mot de passe</label>
+                    <input asp-for="Password" name="Password" type="password" class="form-control" required/>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PasswordRepeated" class="form-label">Confirmer le mot de passe</label>
+                    <input asp-for="PasswordRepeated" name="PasswordRepeated" type="password" class="form-control" required/>
+                    <span asp-validation-for="PasswordRepeated" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Firstname" class="form-label">Prénom</label>
+                    <input asp-for="Firstname" name="Firstname" class="form-control" required/>
+                    <span asp-validation-for="Firstname" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Lastname" class="form-label">Nom</label>
+                    <input asp-for="Lastname" name="Lastname" class="form-control" required/>
+                    <span asp-validation-for="Lastname" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PhoneNumber" class="form-label">Téléphone</label>
+                    <input asp-for="PhoneNumber" name="PhoneNumber" type="tel" class="form-control"/>
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="BirthDate" class="form-label">Date de naissance</label>
+                    <input asp-for="BirthDate" name="BirthDate" type="date" class="form-control"/>
+                    <span asp-validation-for="BirthDate" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Gender" class="form-label">Genre</label>
+                    <select asp-for="Gender" name="Gender" class="form-control">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="1">Homme</option>
+                        <option value="0">Femme</option>
+                        <option value="2">Autre</option>
+                    </select>
+                    <span asp-validation-for="Gender" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="hidden" name="IsAdmin" value="false"/>
+                    <input asp-for="IsAdmin" name="IsAdmin" type="checkbox" class="form-check-input" value="true"/>
+                    <label asp-for="IsAdmin" class="form-check-label">Administrateur</label>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="hidden" name="IsPremium" value="false"/>
+                    <input asp-for="IsPremium" name="IsPremium" type="checkbox" class="form-check-input" value="true"/>
+                    <label asp-for="IsPremium" class="form-check-label">Premium</label>
+                </div>
+
+                <div class="mb-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Créer</button>
+                    <a href="/Category/Index" class="btn btn-secondary">Annuler</a>
+                </div>
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}
+

@@ -56,14 +56,14 @@ public class UserController(
             var cookieOptions = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = Request.IsHttps, 
+                Secure = Request.IsHttps,
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddHours(2)
             };
             Response.Cookies.Append("JwtToken", token, cookieOptions);
 
             var handler = new JwtSecurityTokenHandler();
-            JwtSecurityToken jwt =  handler.ReadJwtToken(token);
+            JwtSecurityToken jwt = handler.ReadJwtToken(token);
 
             var jwtClaims = jwt.Claims.Select(c => new Claim(c.Type, c.Value)).ToList();
 
@@ -95,21 +95,149 @@ public class UserController(
     {
         if (Request.Cookies.TryGetValue("JwtToken", out var token) && !string.IsNullOrEmpty(token))
         {
-                var handler = new JwtSecurityTokenHandler();
-                var jwt = handler.ReadJwtToken(token);
-                var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
-                var userIdClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var handler = new JwtSecurityTokenHandler();
+            var jwt = handler.ReadJwtToken(token);
+            var jti = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+            var userIdClaim = jwt.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-                if (!string.IsNullOrEmpty(jti) && int.TryParse(userIdClaim, out var userId))
-                {
-                    await tokenService.RemoveTokenAsync(jti, userId);
-                }
+            if (!string.IsNullOrEmpty(jti) && int.TryParse(userIdClaim, out var userId))
+            {
+                await tokenService.RemoveTokenAsync(jti, userId);
+            }
+
             Response.Cookies.Delete("JwtToken");
         }
 
-        // Sign out of cookie authentication
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
         return RedirectToAction("Login", "User");
+    }
+
+    [HttpGet("[action]")]
+    [Authorize]
+    public async Task<IActionResult> Index()
+    {
+        var users = await userService.GetAllUsersAsync();
+        return View(users);
+    }
+
+    [HttpGet("[action]")]
+    [Authorize]
+    public IActionResult Create()
+    {
+        return View(new UserDto
+        {
+            Username = "",
+            Email = "",
+            Password = "",
+            PasswordRepeated = "",
+            Firstname = "",
+            Lastname = ""
+        });
+    }
+
+    [HttpPost("Create")]
+    [ValidateAntiForgeryToken]
+    [Authorize]
+    public async Task<IActionResult> Create(
+        [Bind(
+            "Username,Email,Password,PasswordRepeated,Firstname,Lastname,PhoneNumber,Birthdate,Gender,IsAdmin,IsPremium")]
+        UserDto userDto)
+    {
+        ModelState.Remove("IsAdmin");
+        ModelState.Remove("IsPremium");
+
+        var isAdminValue = Request.Form["IsAdmin"].ToString();
+        userDto.IsAdmin = isAdminValue.Contains("true");
+
+        var isPremiumValue = Request.Form["IsPremium"].ToString();
+        userDto.IsPremium = isPremiumValue.Contains("true");
+
+        if (!ModelState.IsValid)
+        {
+            return View(userDto);
+        }
+
+        try
+        {
+            var passwordHasher = new PasswordHasher<UserDto>();
+            userDto.Password = passwordHasher.HashPassword(userDto, userDto.Password);
+
+            await userService.AddUserAsync(userDto);
+            return RedirectToAction("Index");
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "Impossible de créer l'utilisateur. Veuillez réessayer.");
+            return View(userDto);
+        }
+    }
+
+    [HttpGet("[action]")]
+    [Authorize]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var user = await userService.GetUserByIdAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        return View(user);
+    }
+
+    [HttpPost("Edit")]
+    [ValidateAntiForgeryToken]
+    [Authorize]
+    public async Task<IActionResult> Edit(UserDto userDto)
+    {
+        if (string.IsNullOrEmpty(userDto.Password))
+        {
+            var user = await userService.GetUserByIdAsync(userDto.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            userDto.Password = user.Password;
+            userDto.PasswordRepeated = user.PasswordRepeated;
+            ModelState.Remove("IsValid");
+        }
+
+        ModelState.Remove("IsAdmin");
+        ModelState.Remove("IsPremium");
+
+        var isAdminValue = Request.Form["IsAdmin"].ToString();
+        userDto.IsAdmin = isAdminValue.Contains("true");
+
+        var isPremiumValue = Request.Form["IsPremium"].ToString();
+        userDto.IsPremium = isPremiumValue.Contains("true");
+        
+        try
+        {
+            await userService.UpdateUserAsync(userDto);
+            return RedirectToAction("Index");
+        }
+        catch (Exception)
+        {
+            ModelState.AddModelError(string.Empty, "Impossible de mettre à jour l'utilisateur. Veuillez réessayer.");
+            return View(userDto);
+        }
+    }
+
+    [HttpPost("[action]")]
+    [ValidateAntiForgeryToken]
+    [Authorize]
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            await userService.DeleteUserAsync(id);
+            return RedirectToAction("Index");
+        }
+        catch (Exception)
+        {
+            return RedirectToAction("Index");
+        }
     }
 }
