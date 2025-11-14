@@ -26,6 +26,8 @@ builder.Services.AddScoped<IQuestionRepository, QuestionRepository>();
 builder.Services.AddScoped<IQuestionService, QuestionService>();
 builder.Services.AddScoped<IAnswerRepository, AnswerRepository>();
 builder.Services.AddScoped<IAnswerService, AnswerService>();
+builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<IArticleService, ArticleService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<TokenPropagationHandler>();

@@ -14,7 +14,7 @@ public class ArticleRepository(ElixDbContext context) : IArticleRepository
 
     public async Task<Article?> GetArticleByIdAsync(int id)
     {
-        return await context.Articles.FindAsync(id);
+        return await context.Articles.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id);
     }
 
     public async Task<IEnumerable<Article>> GetAllArticlesAsync()
