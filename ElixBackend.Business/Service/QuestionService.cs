@@ -32,6 +32,12 @@ public class QuestionService(IQuestionRepository questionRepository) : IQuestion
         return questions.Select(QuestionDto.QuestionToQuestionDto);
     }
 
+    public async Task<IEnumerable<QuestionDto>> GetQuestionsByCategoryIdAsync(int categoryId)
+    {
+        var questions = await questionRepository.GetQuestionsByCategoryIdAsync(categoryId);
+        return questions.Select(QuestionDto.QuestionToQuestionDto);
+    }
+
     public async Task<QuestionDto> UpdateQuestionAsync(QuestionDto questionDto)
     {
         var question = new Question

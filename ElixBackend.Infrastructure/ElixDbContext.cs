@@ -12,11 +12,9 @@ public class ElixDbContext(DbContextOptions<ElixDbContext> options) : DbContext(
     public DbSet<Answer> Answers { get; set; }
     public DbSet<UserToken> UserTokens { get; set; }
 
-    public DbSet<Quiz> Quizzes { get; set; }
-
     public DbSet<Article> Articles { get; set; }
     public DbSet<UserAnswer> UserAnswers { get; set; }
-    
+
     public DbSet<UserPoint> UserPoints { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

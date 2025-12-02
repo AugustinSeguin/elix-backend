@@ -102,4 +102,33 @@ public class QuestionServiceTest
         Assert.That(result, Is.True);
         _questionRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
+
+    [Test]
+    public async Task GetQuestionsByCategoryIdAsync_ReturnsDtosForCategory()
+    {
+        var questions = new List<Question>
+        {
+            new Question { Id = 1, Title = "Q1", CategoryId = 5 },
+            new Question { Id = 2, Title = "Q2", CategoryId = 5 }
+        };
+        _questionRepositoryMock.Setup(r => r.GetQuestionsByCategoryIdAsync(5)).ReturnsAsync(questions);
+
+        var result = await _questionService.GetQuestionsByCategoryIdAsync(5);
+        var resultList = result.ToList();
+
+        Assert.That(resultList.Count, Is.EqualTo(2));
+        Assert.That(resultList.All(q => q.CategoryId == 5), Is.True);
+        _questionRepositoryMock.Verify(r => r.GetQuestionsByCategoryIdAsync(5), Times.Once);
+    }
+
+    [Test]
+    public async Task GetQuestionsByCategoryIdAsync_ReturnsEmptyWhenNoMatch()
+    {
+        _questionRepositoryMock.Setup(r => r.GetQuestionsByCategoryIdAsync(99)).ReturnsAsync(new List<Question>());
+
+        var result = await _questionService.GetQuestionsByCategoryIdAsync(99);
+
+        Assert.That(result.Count(), Is.EqualTo(0));
+        _questionRepositoryMock.Verify(r => r.GetQuestionsByCategoryIdAsync(99), Times.Once);
+    }
 }

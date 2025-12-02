@@ -9,6 +9,8 @@ public interface IQuestionService
     Task<QuestionDto?> GetQuestionByIdAsync(int id);
 
     Task<IEnumerable<QuestionDto>> GetAllQuestionsAsync();
+    
+    Task<IEnumerable<QuestionDto>> GetQuestionsByCategoryIdAsync(int categoryId);
 
     Task<QuestionDto> UpdateQuestionAsync(QuestionDto question);
 

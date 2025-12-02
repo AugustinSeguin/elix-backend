@@ -7,20 +7,20 @@ public class UserAnswerDto
     public int Id { get; set; }
 
     public int UserId { get; set; }
-    public int AnswerId { get; set; }
+    public int QuestionId { get; set; }
 
     public bool IsCorrect { get; set; } = false;
 
     public UserDto? User { get; set; }
-    public AnswerDto? Answer { get; set; }
+    public Question? Question { get; set; }
     
-    public static UserAnswerDto QuestionToQuestionDto(UserAnswer ua)
+    public static UserAnswerDto UserAnswerToUserAnswerDto(UserAnswer ua)
     {
         return new UserAnswerDto
         {
             Id = ua.Id,
             UserId = ua.UserId,
-            AnswerId = ua.AnswerId,
+            QuestionId = ua.QuestionId,
             IsCorrect = ua.IsCorrect
         };
     }

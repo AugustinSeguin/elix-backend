@@ -7,16 +7,13 @@ namespace ElixBackend.Business.Service;
 
 public class UserAnswerService(IUserAnswerRepository userAnswerRepository) : IUserAnswerService
 {
-    public async Task<UserAnswerDto?> GetUserByIdAsync(int id)
+    public async Task<IEnumerable<UserAnswerDto?>>GetUserAnswerByUserIdAsync(int userId, int questionId)
     {
-        var ua = await userAnswerRepository.GetUserAnswerByIdAsync(id);
-        return ua is null ? null : UserAnswerDto.QuestionToQuestionDto(ua);
-    }
-
-    public async Task<IEnumerable<UserAnswerDto>> GetAllUsersAsync()
-    {
-        var list = await userAnswerRepository.GetAllUserAnswersAsync();
-        return list.Select(UserAnswerDto.QuestionToQuestionDto);
+        var userAnswers = await userAnswerRepository.GetUserAnswerByUserIdAsync(userId, questionId);
+        
+        return userAnswers
+            .Where(ua => ua != null)
+            .Select(ua => UserAnswerDto.UserAnswerToUserAnswerDto(ua!));
     }
 
     public async Task<UserAnswerDto?> AddUserAsync(UserAnswerDto ue)
@@ -24,13 +21,13 @@ public class UserAnswerService(IUserAnswerRepository userAnswerRepository) : IUs
         var entity = new UserAnswer
         {
             UserId = ue.UserId,
-            AnswerId = ue.AnswerId,
+            QuestionId = ue.QuestionId,
             IsCorrect = ue.IsCorrect
         };
 
         var added = await userAnswerRepository.AddUserAnswerAsync(entity);
         await userAnswerRepository.SaveChangesAsync();
-        return UserAnswerDto.QuestionToQuestionDto(added);
+        return UserAnswerDto.UserAnswerToUserAnswerDto(added);
     }
 
     public async Task<UserAnswerDto?> UpdateUserAsync(UserAnswerDto ue)
@@ -39,13 +36,13 @@ public class UserAnswerService(IUserAnswerRepository userAnswerRepository) : IUs
         {
             Id = ue.Id,
             UserId = ue.UserId,
-            AnswerId = ue.AnswerId,
+            QuestionId = ue.QuestionId,
             IsCorrect = ue.IsCorrect
         };
 
         var updated = await userAnswerRepository.UpdateUserAnswerAsync(entity);
         await userAnswerRepository.SaveChangesAsync();
-        return UserAnswerDto.QuestionToQuestionDto(updated);
+        return UserAnswerDto.UserAnswerToUserAnswerDto(updated);
     }
 
     public async Task DeleteUserAsync(int id)

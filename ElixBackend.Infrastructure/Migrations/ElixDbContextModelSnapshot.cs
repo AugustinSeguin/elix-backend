@@ -128,27 +128,6 @@ namespace ElixBackend.Infrastructure.Migrations
                     b.ToTable("Questions");
                 });
 
-            modelBuilder.Entity("ElixBackend.Domain.Entities.Quiz", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.ToTable("Quizzes");
-                });
-
             modelBuilder.Entity("ElixBackend.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -212,18 +191,18 @@ namespace ElixBackend.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AnswerId")
-                        .HasColumnType("integer");
-
                     b.Property<bool>("IsCorrect")
                         .HasColumnType("boolean");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AnswerId");
+                    b.HasIndex("QuestionId");
 
                     b.HasIndex("UserId");
 
@@ -284,7 +263,7 @@ namespace ElixBackend.Infrastructure.Migrations
             modelBuilder.Entity("ElixBackend.Domain.Entities.Answer", b =>
                 {
                     b.HasOne("ElixBackend.Domain.Entities.Question", "Question")
-                        .WithMany()
+                        .WithMany("Answers")
                         .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -314,22 +293,11 @@ namespace ElixBackend.Infrastructure.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("ElixBackend.Domain.Entities.Quiz", b =>
-                {
-                    b.HasOne("ElixBackend.Domain.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-                });
-
             modelBuilder.Entity("ElixBackend.Domain.Entities.UserAnswer", b =>
                 {
-                    b.HasOne("ElixBackend.Domain.Entities.Answer", "Answer")
+                    b.HasOne("ElixBackend.Domain.Entities.Question", "Question")
                         .WithMany()
-                        .HasForeignKey("AnswerId")
+                        .HasForeignKey("QuestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -339,7 +307,7 @@ namespace ElixBackend.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Answer");
+                    b.Navigation("Question");
 
                     b.Navigation("User");
                 });
@@ -372,6 +340,11 @@ namespace ElixBackend.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("ElixBackend.Domain.Entities.Question", b =>
+                {
+                    b.Navigation("Answers");
                 });
 
             modelBuilder.Entity("ElixBackend.Domain.Entities.User", b =>

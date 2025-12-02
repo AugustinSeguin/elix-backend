@@ -6,9 +6,7 @@ public interface IUserAnswerRepository
 {
     Task<UserAnswer> AddUserAnswerAsync(UserAnswer userAnswer);
 
-    Task<UserAnswer?> GetUserAnswerByIdAsync(int id);
-
-    Task<IEnumerable<UserAnswer>> GetAllUserAnswersAsync();
+    Task<IEnumerable<UserAnswer?>> GetUserAnswerByUserIdAsync(int userId, int questionId);
 
     Task<UserAnswer> UpdateUserAnswerAsync(UserAnswer userAnswer);
 

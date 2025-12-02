@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwianRpIjoiZWY1NzBjODYtNjFhYi00NDg0LTg1ODktNmIzYjM2ODExZDZkIiwibmJmIjoxNzYyNzgzMjE2LCJleHAiOjE3NjI3OTA0MTYsImlhdCI6MTc2Mjc4MzIxNn0.nXqJqmvJ1Mp3xxhMBeH6_6PVynC8O4AxdUm2v0mnB-s
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiMzRjOWIyZGUtYmJiOC00NmI4LWI3OTMtNWUwOTk4MDFmY2ZlIiwibmJmIjoxNzY0Njg5NzExLCJleHAiOjE3NjQ2OTY5MTEsImlhdCI6MTc2NDY4OTcxMX0.kUQEyEHj2BUDcaWAe5JKZJg1L4Epth1RWfWWTVvQZI0
 
 ### Get all questions
 GET {{baseUrl}}/api/Question
@@ -19,7 +19,7 @@ Authorization: Bearer {{token}}
 {
   "title": "Exemple de question",
   "categoryId": 1,
-  "mediaPath": "/media/example.png"
+  "mediaPath": ""
 }
 
 ### Update a question (admin)

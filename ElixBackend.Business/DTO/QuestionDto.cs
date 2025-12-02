@@ -16,6 +16,8 @@ public class QuestionDto
     public int CategoryId { get; set; }
     
     public Category? Category { get; set; }
+    
+    public IEnumerable<AnswerDto>? Answers { get; set; }
 
     public static QuestionDto QuestionToQuestionDto(Question question)
     {
@@ -24,7 +26,8 @@ public class QuestionDto
             Id = question.Id,
             Title = question.Title,
             MediaPath = question.MediaPath,
-            CategoryId = question.CategoryId
+            CategoryId = question.CategoryId,
+            Answers = question.Answers?.Select(AnswerDto.AnswerToAnswerDto)
         };
     }
 }

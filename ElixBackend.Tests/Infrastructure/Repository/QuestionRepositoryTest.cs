@@ -99,4 +99,37 @@ public class QuestionRepositoryTest
         Assert.That(found, Is.Null);
     }
 
+    [Test]
+    public async Task GetQuestionsByCategoryIdAsync_ReturnsQuestionsForCategory()
+    {
+        var questions = new List<Question>
+        {
+            new Question { Title = "Q1", CategoryId = 1 },
+            new Question { Title = "Q2", CategoryId = 1 },
+            new Question { Title = "Q3", CategoryId = 2 }
+        };
+        foreach (var q in questions)
+        {
+            await _repository.AddQuestionAsync(q);
+        }
+        await _repository.SaveChangesAsync();
+
+        var result = await _repository.GetQuestionsByCategoryIdAsync(1);
+        var resultList = result.ToList();
+
+        Assert.That(resultList.Count, Is.EqualTo(2));
+        Assert.That(resultList.All(q => q.CategoryId == 1), Is.True);
+    }
+
+    [Test]
+    public async Task GetQuestionsByCategoryIdAsync_ReturnsEmptyWhenNoCategoryMatch()
+    {
+        var question = new Question { Title = "Q1", CategoryId = 1 };
+        await _repository.AddQuestionAsync(question);
+        await _repository.SaveChangesAsync();
+
+        var result = await _repository.GetQuestionsByCategoryIdAsync(99);
+
+        Assert.That(result.Count(), Is.EqualTo(0));
+    }
 }

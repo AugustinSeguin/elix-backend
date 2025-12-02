@@ -1,10 +1,9 @@
 using ElixBackend.Business.DTO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ElixBackend.Business.IService;
 
 public interface IQuizService
 {
-
+    Task<QuizDto?> StartQuizAsync(int userId, int categoryId);
+    // Task<QuizDto?> SubmitQuizAsync(QuizDto quizDto);
 }
