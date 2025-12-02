@@ -6,3 +6,54 @@ GET {{baseUrl}}/api/Quiz/StartQuiz?userId=1&categoryId=1
 Authorization: Bearer {{token}}
 Accept: application/json
 
+### Submit quiz answer
+POST {{baseUrl}}/api/Quiz/SubmitQuiz
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "categoryId": 1,
+  "userAnswers": [
+    {
+      "questionId": 1,
+      "answerIdSelected": 1
+    },
+    {
+      "questionId": 2,
+      "answerIdSelected": 5
+    },
+    {
+      "questionId": 3,
+      "answerIdSelected": 9
+    },
+    {
+      "questionId": 4,
+      "answerIdSelected": 13
+    },
+    {
+      "questionId": 5,
+      "answerIdSelected": 17
+    },
+    {
+      "questionId": 6,
+      "answerIdSelected": 21
+    },
+    {
+      "questionId": 7,
+      "answerIdSelected": 25
+    },
+    {
+      "questionId": 8,
+      "answerIdSelected": 29
+    },
+    {
+      "questionId": 9,
+      "answerIdSelected": 33
+    },
+    {
+      "questionId": 10,
+      "answerIdSelected": 37
+    }
+  ]
+}

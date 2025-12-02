@@ -22,4 +22,23 @@ public class QuizController(IQuizService quizService) : ControllerBase
 
         return Ok(quiz);
     }
+
+    [HttpPost("SubmitQuiz")]
+    [Authorize]
+    public async Task<ActionResult<QuizDto>> SubmitQuiz([FromBody] QuizSubmissionDto quizSubmission)
+    {
+        if (!quizSubmission.UserAnswers.Any())
+        {
+            return BadRequest(new { message = "Les données de réponse sont invalides." });
+        }
+
+        var result = await quizService.SubmitQuizAsync(quizSubmission);
+        
+        if (result == null)
+        {
+            return NotFound(new { message = "Quiz non trouvé." });
+        }
+
+        return Ok(result);
+    }
 }

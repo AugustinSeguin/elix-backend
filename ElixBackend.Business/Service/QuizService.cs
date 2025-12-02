@@ -4,29 +4,29 @@ using ElixBackend.Business.IService;
 namespace ElixBackend.Business.Service;
 
 public class QuizService(
-    IAnswerService answerService,
     IQuestionService questionService, 
-    IUserAnswerService userAnswerService) : IQuizService
+    IUserAnswerService userAnswerService, 
+    IUserPointService userPointService) : IQuizService
 {
     public async Task<QuizDto?> StartQuizAsync(int userId, int categoryId)
     {
         // Récupérer toutes les questions de la catégorie (avec leurs réponses)
         var categoryQuestions = await questionService.GetQuestionsByCategoryIdAsync(categoryId);
         var questionDtos = categoryQuestions.ToList();
-        
+
         if (!questionDtos.Any())
         {
             return null;
         }
-        
+
         // Grouper les réponses de l'utilisateur par question
         var userAnswersByQuestion = new Dictionary<int, List<UserAnswerDto>>();
-        
+
         foreach (var question in questionDtos)
         {
             var userAnswers = await userAnswerService.GetUserAnswerByUserIdAsync(userId, question.Id);
             var userAnswersList = userAnswers.Where(ua => ua != null).Select(ua => ua!).ToList();
-            
+
             if (userAnswersList.Any())
             {
                 userAnswersByQuestion[question.Id] = userAnswersList;
@@ -40,15 +40,14 @@ public class QuizService(
 
         foreach (var question in questionDtos)
         {
-            if (!userAnswersByQuestion.ContainsKey(question.Id))
+            if (!userAnswersByQuestion.TryGetValue(question.Id, out var userAnswers))
             {
                 notAnsweredQuestions.Add(question);
             }
             else
             {
-                var userAnswers = userAnswersByQuestion[question.Id];
                 var hasIncorrectAnswer = userAnswers.Any(ua => !ua.IsCorrect);
-                
+
                 if (hasIncorrectAnswer)
                 {
                     incorrectlyAnsweredQuestions.Add(question);
@@ -62,15 +61,15 @@ public class QuizService(
 
         // Sélectionner jusqu'à 10 questions (priorité : non répondues > incorrectes > correctes)
         var selectedQuestions = new List<QuestionDto>();
-        
+
         selectedQuestions.AddRange(notAnsweredQuestions.Take(10));
-        
+
         if (selectedQuestions.Count < 10)
         {
             var remaining = 10 - selectedQuestions.Count;
             selectedQuestions.AddRange(incorrectlyAnsweredQuestions.Take(remaining));
         }
-        
+
         if (selectedQuestions.Count < 10)
         {
             var remaining = 10 - selectedQuestions.Count;
@@ -79,7 +78,7 @@ public class QuizService(
 
         if (!selectedQuestions.Any())
         {
-            return null; 
+            return null;
         }
 
         // Les réponses sont déjà incluses dans les QuestionDto
@@ -92,4 +91,83 @@ public class QuizService(
 
         return quizDto;
     }
+
+
+    public async Task<QuizDto?> SubmitQuizAsync(QuizSubmissionDto quizSubmission)
+    {
+        var userId = quizSubmission.UserId;
+        var categoryId = quizSubmission.CategoryId;
+        var correctAnswersCount = 0;
+        var totalQuestions = quizSubmission.UserAnswers.Count;
+
+        // Récupérer toutes les questions de la catégorie avec leurs réponses
+        var categoryQuestions = await questionService.GetQuestionsByCategoryIdAsync(categoryId);
+        var questionsList = categoryQuestions.ToList();
+
+        if (!questionsList.Any())
+        {
+            return null;
+        }
+
+        // Traiter chaque réponse de l'utilisateur
+        foreach (var userAnswer in quizSubmission.UserAnswers)
+        {
+            var question = questionsList.FirstOrDefault(q => q.Id == userAnswer.QuestionId);
+            
+            if (question?.Answers == null || !question.Answers.Any())
+            {
+                continue;
+            }
+
+            // Trouver la réponse correcte pour cette question
+            var correctAnswer = question.Answers.FirstOrDefault(a => a.IsValid);
+            
+            if (correctAnswer == null)
+            {
+                continue;
+            }
+
+            // Vérifier si l'utilisateur a donné la bonne réponse
+            var isCorrect = userAnswer.AnswerIdSelected == correctAnswer.Id;
+
+            if (isCorrect)
+            {
+                correctAnswersCount++;
+            }
+
+            // Enregistrer la réponse de l'utilisateur dans la base de données
+            var userAnswerEntity = new UserAnswerDto
+            {
+                UserId = userId,
+                QuestionId = question.Id,
+                IsCorrect = isCorrect
+            };
+
+            await userAnswerService.AddUserAsync(userAnswerEntity);
+        }
+
+        // Si l'utilisateur a au moins 8 bonnes réponses sur 10, il gagne des points
+        if (totalQuestions >= 10 && correctAnswersCount >= 8)
+        {
+            var userPointDto = new UserPointDto
+            {
+                UserId = userId,
+                CategoryId = categoryId,
+                Points = correctAnswersCount
+            };
+
+            await userPointService.AddUserAsync(userPointDto);
+        }
+
+        // Retourner le quiz avec les questions (pour afficher les corrections côté client)
+        var quizDto = new QuizDto
+        {
+            Title = $"Quiz - Catégorie {categoryId} - Résultat: {correctAnswersCount}/{totalQuestions}",
+            CategoryId = categoryId,
+            Questions = questionsList.Where(q => quizSubmission.UserAnswers.Any(ua => ua.QuestionId == q.Id)).ToList()
+        };
+
+        return quizDto;
+    }
 }
+

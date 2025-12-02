@@ -13,6 +13,8 @@ public class UserAnswerDto
 
     public UserDto? User { get; set; }
     public Question? Question { get; set; }
+
+    public int QuestionAnswered { get; set; } = 0;
     
     public static UserAnswerDto UserAnswerToUserAnswerDto(UserAnswer ua)
     {
