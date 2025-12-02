@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyIiwicm9sZSI6ImFkbWluIiwianRpIjoiZjk5YThlOTktMjIxMC00Mjg2LTkwY2ItNGMwZWJlZDdjODJkIiwibmJmIjoxNzYyNzgyOTM5LCJleHAiOjE3NjI3OTAxMzksImlhdCI6MTc2Mjc4MjkzOX0.gzDMcSWR0xGct_ki0Gnp_6VwmDvfXF0fRiBXLPB2ECs
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiMzRjOWIyZGUtYmJiOC00NmI4LWI3OTMtNWUwOTk4MDFmY2ZlIiwibmJmIjoxNzY0Njg5NzExLCJleHAiOjE3NjQ2OTY5MTEsImlhdCI6MTc2NDY4OTcxMX0.kUQEyEHj2BUDcaWAe5JKZJg1L4Epth1RWfWWTVvQZI0
 
 ### Get all answers
 GET {{baseUrl}}/api/Answer
@@ -18,8 +18,8 @@ Authorization: Bearer {{token}}
 
 {
   "title": "Réponse exemple",
-  "questionId": 1,
-  "isValid": true
+  "questionId": 14,
+  "isValid": false
 }
 
 ### Update an answer (admin)

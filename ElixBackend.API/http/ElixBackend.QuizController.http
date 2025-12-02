@@ -1,38 +1,59 @@
-@baseUrl = http://localhost:5000
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwianRpIjoiZWY1NzBjODYtNjFhYi00NDg0LTg1ODktNmIzYjM2ODExZDZkIiwibmJmIjoxNzYyNzgzMjE2LCJleHAiOjE3NjI3OTA0MTYsImlhdCI6MTc2Mjc4MzIxNn0.nXqJqmvJ1Mp3xxhMBeH6_6PVynC8O4AxdUm2v0mnB-s
+@baseUrl = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiMzRjOWIyZGUtYmJiOC00NmI4LWI3OTMtNWUwOTk4MDFmY2ZlIiwibmJmIjoxNzY0Njg5NzExLCJleHAiOjE3NjQ2OTY5MTEsImlhdCI6MTc2NDY4OTcxMX0.kUQEyEHj2BUDcaWAe5JKZJg1L4Epth1RWfWWTVvQZI0
 
-### Get all quizzes
-GET {{baseUrl}}/api/Quiz
+### Start a quiz
+GET {{baseUrl}}/api/Quiz/StartQuiz?userId=1&categoryId=1
 Authorization: Bearer {{token}}
 Accept: application/json
 
-### Get quiz by id
-GET {{baseUrl}}/api/Quiz/1
+### Submit quiz answer
+POST {{baseUrl}}/api/Quiz/SubmitQuiz
 Authorization: Bearer {{token}}
-Accept: application/json
-
-### Create a quiz (admin)
-POST {{baseUrl}}/api/Quiz
 Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
-  "title": "Exemple de quiz",
-  "categoryId": 1
+  "userId": 1,
+  "categoryId": 1,
+  "userAnswers": [
+    {
+      "questionId": 1,
+      "answerIdSelected": 1
+    },
+    {
+      "questionId": 2,
+      "answerIdSelected": 5
+    },
+    {
+      "questionId": 3,
+      "answerIdSelected": 9
+    },
+    {
+      "questionId": 4,
+      "answerIdSelected": 13
+    },
+    {
+      "questionId": 5,
+      "answerIdSelected": 17
+    },
+    {
+      "questionId": 6,
+      "answerIdSelected": 21
+    },
+    {
+      "questionId": 7,
+      "answerIdSelected": 25
+    },
+    {
+      "questionId": 8,
+      "answerIdSelected": 29
+    },
+    {
+      "questionId": 9,
+      "answerIdSelected": 33
+    },
+    {
+      "questionId": 10,
+      "answerIdSelected": 37
+    }
+  ]
 }
-
-### Update a quiz (admin)
-PUT {{baseUrl}}/api/Quiz/1
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "id": 1,
-  "title": "Quiz mis à jour",
-  "categoryId": 1
-}
-
-### Delete a quiz (admin)
-DELETE {{baseUrl}}/api/Quiz/1
-Authorization: Bearer {{token}}
-

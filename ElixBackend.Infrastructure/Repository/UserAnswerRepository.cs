@@ -12,14 +12,9 @@ public class UserAnswerRepository(ElixDbContext context) : IUserAnswerRepository
         return entry.Entity;
     }
 
-    public async Task<UserAnswer?> GetUserAnswerByIdAsync(int id)
+    public async Task<IEnumerable<UserAnswer?>> GetUserAnswerByUserIdAsync(int userId, int questionId)
     {
-        return await context.UserAnswers.AsNoTracking().FirstOrDefaultAsync(q => q.Id == id);
-    }
-
-    public async Task<IEnumerable<UserAnswer>> GetAllUserAnswersAsync()
-    {
-        return await context.UserAnswers.ToListAsync();
+        return await context.UserAnswers.AsNoTracking().Where(q => q.UserId == userId && q.QuestionId == questionId).ToListAsync();
     }
 
     public Task<UserAnswer> UpdateUserAnswerAsync(UserAnswer userAnswer)

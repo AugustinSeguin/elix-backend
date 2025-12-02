@@ -1,12 +1,12 @@
 @ElixBackend_HostAddress = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIyIiwicm9sZSI6ImFkbWluIiwianRpIjoiZjk5YThlOTktMjIxMC00Mjg2LTkwY2ItNGMwZWJlZDdjODJkIiwibmJmIjoxNzYyNzgyOTM5LCJleHAiOjE3NjI3OTAxMzksImlhdCI6MTc2Mjc4MjkzOX0.gzDMcSWR0xGct_ki0Gnp_6VwmDvfXF0fRiBXLPB2ECs
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiNDM1YzA2NGUtZTUyMi00MTk1LTlhMTktMDk0MDg5OWRhYWYxIiwibmJmIjoxNzY0Njg3ODg3LCJleHAiOjE3NjQ2OTUwODcsImlhdCI6MTc2NDY4Nzg4N30.aSOK30jTvbKGdyZ3eiVdhdX82U8LeFh2-aqVp4H0It0
 
 ### LOGIN
 POST {{ElixBackend_HostAddress}}/api/User/login
 Content-Type: application/json
 
 {
-  "email": "user@email.com",
+  "email": "us1er@email.com",
   "password": "MotDePasse123"
 }
 
@@ -33,7 +33,7 @@ Content-Type: application/json
 ###
 
 ### GET USER BY ID (auth)
-GET {{ElixBackend_HostAddress}}/api/User/2
+GET {{ElixBackend_HostAddress}}/api/User/1
 Authorization: Bearer {{token}}
 
 ###

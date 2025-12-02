@@ -27,7 +27,7 @@ public class UserPointServiceTest
         _repoMock.Setup(r => r.AddUserPointAsync(It.IsAny<UserPoint>())).ReturnsAsync(entity);
         _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
-        var result = await _service.AddUserAsync(dto);
+        var result = await _service.AddUserPointAsync(dto);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(100));
@@ -63,7 +63,7 @@ public class UserPointServiceTest
         };
         _repoMock.Setup(r => r.GetAllUserPointsAsync()).ReturnsAsync(list);
 
-        var result = await _service.GetAllUsersAsync();
+        var result = await _service.GetAllUserPointsAsync();
         var asList = result.ToList();
 
         Assert.That(asList.Count, Is.EqualTo(2));
@@ -79,7 +79,7 @@ public class UserPointServiceTest
         _repoMock.Setup(r => r.UpdateUserPointAsync(It.IsAny<UserPoint>())).ReturnsAsync(entity);
         _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
-        var result = await _service.UpdateUserAsync(dto);
+        var result = await _service.UpdateUserPointAsync(dto);
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(7));
@@ -96,7 +96,7 @@ public class UserPointServiceTest
         _repoMock.Setup(r => r.DeleteUserPointAsync(9)).Returns(Task.CompletedTask);
         _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
-        await _service.DeleteUserAsync(9);
+        await _service.DeleteUserPointAsync(9);
 
         _repoMock.Verify(r => r.DeleteUserPointAsync(9), Times.Once);
         _repoMock.Verify(r => r.SaveChangesAsync(), Times.Once);

@@ -13,13 +13,13 @@ public class UserPointService(IUserPointRepository userPointRepository) : IUserP
         return up is null ? null : ToDto(up);
     }
 
-    public async Task<IEnumerable<UserPointDto>> GetAllUsersAsync()
+    public async Task<IEnumerable<UserPointDto>> GetAllUserPointsAsync()
     {
         var list = await userPointRepository.GetAllUserPointsAsync();
         return list.Select(ToDto);
     }
 
-    public async Task<UserPointDto?> AddUserAsync(UserPointDto up)
+    public async Task<UserPointDto?> AddUserPointAsync(UserPointDto up)
     {
         var entity = new UserPoint
         {
@@ -33,7 +33,7 @@ public class UserPointService(IUserPointRepository userPointRepository) : IUserP
         return ToDto(added);
     }
 
-    public async Task<UserPointDto?> UpdateUserAsync(UserPointDto up)
+    public async Task<UserPointDto?> UpdateUserPointAsync(UserPointDto up)
     {
         var entity = new UserPoint
         {
@@ -48,7 +48,7 @@ public class UserPointService(IUserPointRepository userPointRepository) : IUserP
         return ToDto(updated);
     }
 
-    public async Task DeleteUserAsync(int id)
+    public async Task DeleteUserPointAsync(int id)
     {
         await userPointRepository.DeleteUserPointAsync(id);
         await userPointRepository.SaveChangesAsync();
