@@ -3,6 +3,7 @@ using System;
 using ElixBackend.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ElixBackend.Infrastructure.Migrations
 {
     [DbContext(typeof(ElixDbContext))]
-    partial class ElixDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251202131032_user_answer_table")]
+    partial class user_answer_table
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -230,32 +233,6 @@ namespace ElixBackend.Infrastructure.Migrations
                     b.ToTable("UserAnswers");
                 });
 
-            modelBuilder.Entity("ElixBackend.Domain.Entities.UserPoint", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserPoints");
-                });
-
             modelBuilder.Entity("ElixBackend.Domain.Entities.UserToken", b =>
                 {
                     b.Property<int>("Id")
@@ -340,25 +317,6 @@ namespace ElixBackend.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("Answer");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("ElixBackend.Domain.Entities.UserPoint", b =>
-                {
-                    b.HasOne("ElixBackend.Domain.Entities.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ElixBackend.Domain.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Category");
 
                     b.Navigation("User");
                 });

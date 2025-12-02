@@ -19,7 +19,6 @@ public class AnswerControllerTest
     public void SetUp()
     {
         _answerServiceMock = new Mock<IAnswerService>();
-        _questionServiceMock = new Mock<IQuestionService>();
         _controller = new AnswerController(_answerServiceMock.Object);
         
         // Setup TempData and HttpContext
