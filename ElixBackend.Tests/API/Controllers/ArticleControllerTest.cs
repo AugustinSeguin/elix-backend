@@ -101,7 +101,7 @@ public class ArticleControllerTest
     [Test]
     public async Task DeleteArticleAsync_ReturnsNoContent()
     {
-        _articleServiceMock.Setup(s => s.DeleteArticleAsync(7)).Returns(Task.CompletedTask);
+        _articleServiceMock.Setup(s => s.DeleteArticleAsync(7)).ReturnsAsync(true);
 
         var result = await _controller.DeleteArticleAsync(7);
 

@@ -15,6 +15,8 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     public async Task<ActionResult<IEnumerable<CategoryDto>>> GetAll()
     {
         var categories = await categoryService.GetAllCategoriesAsync();
+        if (categories is null)
+            return Problem("Impossible de récupérer les catégories.");
         return Ok(categories);
     }
 
@@ -35,6 +37,8 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     public async Task<ActionResult<CategoryDto>> Create(CategoryDto dto)
     {
         var created = await categoryService.AddCategoryAsync(dto);
+        if (created is null)
+            return Problem("La création de la catégorie a échoué.");
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -47,6 +51,8 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
             return BadRequest();
 
         var updated = await categoryService.UpdateCategoryAsync(dto);
+        if (updated is null)
+            return Problem("La mise à jour de la catégorie a échoué.");
         return Ok(updated);
     }
 
@@ -55,7 +61,9 @@ public class CategoryController(ICategoryService categoryService) : ControllerBa
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        await categoryService.DeleteCategoryAsync(id);
+        var deleted = await categoryService.DeleteCategoryAsync(id);
+        if (deleted is null)
+            return Problem("La suppression de la catégorie a échoué.");
         return NoContent();
     }
 }

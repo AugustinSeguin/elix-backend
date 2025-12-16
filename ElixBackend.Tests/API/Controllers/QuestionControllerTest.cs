@@ -100,7 +100,7 @@ public class QuestionControllerTest
     [Test]
     public async Task Delete_ReturnsNoContent()
     {
-        _questionServiceMock.Setup(s => s.DeleteQuestionAsync(7)).Returns(Task.CompletedTask);
+        _questionServiceMock.Setup(s => s.DeleteQuestionAsync(7)).ReturnsAsync(true);
 
         var result = await _controller.Delete(7);
 

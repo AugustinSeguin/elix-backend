@@ -294,7 +294,7 @@ public class ArticleControllerTest
     {
         // Arrange
         var articleId = 5;
-        _articleServiceMock.Setup(s => s.DeleteArticleAsync(articleId)).Returns(Task.CompletedTask);
+        _articleServiceMock.Setup(s => s.DeleteArticleAsync(articleId)).ReturnsAsync(true);
 
         // Act
         var result = await _controller.Delete(articleId) as RedirectToActionResult;

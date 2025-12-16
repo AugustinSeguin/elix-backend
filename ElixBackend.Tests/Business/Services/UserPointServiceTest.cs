@@ -2,6 +2,7 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace ElixBackend.Tests.Business.Services;
@@ -11,12 +12,14 @@ public class UserPointServiceTest
 {
     private Mock<IUserPointRepository> _repoMock;
     private UserPointService _service;
+    private Mock<ILogger<UserPointService>> _loggerMock;
 
     [SetUp]
     public void SetUp()
     {
         _repoMock = new Mock<IUserPointRepository>();
-        _service = new UserPointService(_repoMock.Object);
+        _loggerMock = new Mock<ILogger<UserPointService>>();
+        _service = new UserPointService(_repoMock.Object, _loggerMock.Object);
     }
 
     [Test]

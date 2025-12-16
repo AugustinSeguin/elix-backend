@@ -1,20 +1,20 @@
 namespace ElixBackend.Business.IService;
 
-using ElixBackend.Business.DTO;
+using DTO;
 
 public interface IQuestionService
 {
-    Task<QuestionDto> AddQuestionAsync(QuestionDto question);
+    Task<QuestionDto?> AddQuestionAsync(QuestionDto question);
 
     Task<QuestionDto?> GetQuestionByIdAsync(int id);
 
-    Task<IEnumerable<QuestionDto>> GetAllQuestionsAsync();
+    Task<IEnumerable<QuestionDto>?> GetAllQuestionsAsync();
     
-    Task<IEnumerable<QuestionDto>> GetQuestionsByCategoryIdAsync(int categoryId);
+    Task<IEnumerable<QuestionDto>?> GetQuestionsByCategoryIdAsync(int categoryId);
 
-    Task<QuestionDto> UpdateQuestionAsync(QuestionDto question);
+    Task<QuestionDto?> UpdateQuestionAsync(QuestionDto question);
 
-    Task DeleteQuestionAsync(int id);
+    Task<bool?> DeleteQuestionAsync(int id);
 
-    Task<bool> SaveChangesAsync();
+    Task<bool?> SaveChangesAsync();
 }

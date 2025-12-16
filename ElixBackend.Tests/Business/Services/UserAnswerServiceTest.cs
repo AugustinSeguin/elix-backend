@@ -2,6 +2,7 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace ElixBackend.Tests.Business.Services;
@@ -11,12 +12,14 @@ public class UserAnswerServiceTest
 {
     private Mock<IUserAnswerRepository> _repoMock;
     private UserAnswerService _service;
+    private Mock<ILogger<UserAnswerService>> _loggerMock;
 
     [SetUp]
     public void SetUp()
     {
         _repoMock = new Mock<IUserAnswerRepository>();
-        _service = new UserAnswerService(_repoMock.Object);
+        _loggerMock = new Mock<ILogger<UserAnswerService>>();
+        _service = new UserAnswerService(_repoMock.Object, _loggerMock.Object);
     }
 
     [Test]

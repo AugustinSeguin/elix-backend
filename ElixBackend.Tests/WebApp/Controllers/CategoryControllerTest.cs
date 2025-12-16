@@ -257,7 +257,7 @@ public class CategoryControllerTest
     {
         // Arrange
         var categoryId = 5;
-        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(categoryId)).Returns(Task.CompletedTask);
+        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(categoryId)).ReturnsAsync(true);
 
         // Act
         var result = await _controller.Delete(categoryId) as RedirectToActionResult;

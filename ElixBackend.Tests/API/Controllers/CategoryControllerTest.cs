@@ -111,11 +111,12 @@ public class CategoryControllerTest
     }
 
     [Test]
-    public async Task Delete_ReturnsNoContent()
+    public async Task DeleteCategory_ReturnsNoContent()
     {
-        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(7)).Returns(Task.CompletedTask);
+        var categoryId = 7;
+        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(categoryId)).ReturnsAsync(true);
 
-        var result = await _controller.Delete(7);
+        var result = await _controller.Delete(categoryId);
 
         Assert.That(result, Is.TypeOf<NoContentResult>());
     }

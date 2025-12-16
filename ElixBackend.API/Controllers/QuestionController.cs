@@ -15,6 +15,8 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
     public async Task<ActionResult<IEnumerable<QuestionDto>>> GetAll()
     {
         var questions = await questionService.GetAllQuestionsAsync();
+        if (questions is null)
+            return Problem("Impossible de récupérer les questions.");
         return Ok(questions);
     }
 
@@ -35,6 +37,8 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
     public async Task<ActionResult<QuestionDto>> Create(QuestionDto dto)
     {
         var created = await questionService.AddQuestionAsync(dto);
+        if (created is null)
+            return Problem("La création de la question a échoué.");
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
@@ -47,6 +51,8 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
             return BadRequest();
 
         var updated = await questionService.UpdateQuestionAsync(dto);
+        if (updated is null)
+            return Problem("La mise à jour de la question a échoué.");
         return Ok(updated);
     }
 
@@ -55,7 +61,9 @@ public class QuestionController(IQuestionService questionService) : ControllerBa
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> Delete(int id)
     {
-        await questionService.DeleteQuestionAsync(id);
+        var deleted = await questionService.DeleteQuestionAsync(id);
+        if (deleted is null)
+            return Problem("La suppression de la question a échoué.");
         return NoContent();
     }
 }

@@ -2,56 +2,97 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Logging;
 
 namespace ElixBackend.Business.Service;
 
-public class UserPointService(IUserPointRepository userPointRepository) : IUserPointService
+public class UserPointService(IUserPointRepository userPointRepository, ILogger<UserPointService> logger) : IUserPointService
 {
     public async Task<UserPointDto?> GetUserByIdAsync(int id)
     {
-        var up = await userPointRepository.GetUserPointByIdAsync(id);
-        return up is null ? null : ToDto(up);
+        try
+        {
+            var up = await userPointRepository.GetUserPointByIdAsync(id);
+            return up is null ? null : ToDto(up);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.GetUserByIdAsync failed for id {Id}", id);
+            return null;
+        }
     }
 
-    public async Task<IEnumerable<UserPointDto>> GetAllUserPointsAsync()
+    public async Task<IEnumerable<UserPointDto>?> GetAllUserPointsAsync()
     {
-        var list = await userPointRepository.GetAllUserPointsAsync();
-        return list.Select(ToDto);
+        try
+        {
+            var list = await userPointRepository.GetAllUserPointsAsync();
+            return list.Select(ToDto);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.GetAllUserPointsAsync failed");
+            return null;
+        }
     }
 
     public async Task<UserPointDto?> AddUserPointAsync(UserPointDto up)
     {
-        var entity = new UserPoint
+        try
         {
-            UserId = up.UserId,
-            CategoryId = up.CategoryId,
-            Points = up.Points
-        };
+            var entity = new UserPoint
+            {
+                UserId = up.UserId,
+                CategoryId = up.CategoryId,
+                Points = up.Points
+            };
 
-        var added = await userPointRepository.AddUserPointAsync(entity);
-        await userPointRepository.SaveChangesAsync();
-        return ToDto(added);
+            var added = await userPointRepository.AddUserPointAsync(entity);
+            await userPointRepository.SaveChangesAsync();
+            return ToDto(added);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.AddUserPointAsync failed for {@UserPointDto}", up);
+            return null;
+        }
     }
 
     public async Task<UserPointDto?> UpdateUserPointAsync(UserPointDto up)
     {
-        var entity = new UserPoint
+        try
         {
-            Id = up.Id,
-            UserId = up.UserId,
-            CategoryId = up.CategoryId,
-            Points = up.Points
-        };
+            var entity = new UserPoint
+            {
+                Id = up.Id,
+                UserId = up.UserId,
+                CategoryId = up.CategoryId,
+                Points = up.Points
+            };
 
-        var updated = await userPointRepository.UpdateUserPointAsync(entity);
-        await userPointRepository.SaveChangesAsync();
-        return ToDto(updated);
+            var updated = await userPointRepository.UpdateUserPointAsync(entity);
+            await userPointRepository.SaveChangesAsync();
+            return ToDto(updated);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.UpdateUserPointAsync failed for {@UserPointDto}", up);
+            return null;
+        }
     }
 
-    public async Task DeleteUserPointAsync(int id)
+    public async Task<bool?> DeleteUserPointAsync(int id)
     {
-        await userPointRepository.DeleteUserPointAsync(id);
-        await userPointRepository.SaveChangesAsync();
+        try
+        {
+            await userPointRepository.DeleteUserPointAsync(id);
+            return await userPointRepository.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.DeleteUserPointAsync failed for id {Id}", id);
+            return null;
+        }
     }
 
     private static UserPointDto ToDto(UserPoint up)
