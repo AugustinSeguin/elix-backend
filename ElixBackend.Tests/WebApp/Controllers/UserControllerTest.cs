@@ -422,7 +422,7 @@ public class UserControllerTest
     {
         // Arrange
         var userId = 5;
-        _userServiceMock.Setup(s => s.DeleteUserAsync(userId)).Returns(Task.CompletedTask);
+        _userServiceMock.Setup(s => s.DeleteUserAsync(userId)).ReturnsAsync(true);
 
         // Act
         var result = await _controller.Delete(userId) as RedirectToActionResult;
@@ -451,4 +451,3 @@ public class UserControllerTest
 
     #endregion
 }
-

@@ -1,6 +1,7 @@
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.Service;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework.Legacy;
 
@@ -13,6 +14,7 @@ public class QuizServiceTest
     private Mock<IUserAnswerService> _userAnswerServiceMock;
     private Mock<IUserPointService> _userPointServiceMock;
     private QuizService _service;
+    private Mock<ILogger<QuizService>> _loggerMock;
 
     [SetUp]
     public void SetUp()
@@ -20,7 +22,9 @@ public class QuizServiceTest
         _questionServiceMock = new Mock<IQuestionService>();
         _userAnswerServiceMock = new Mock<IUserAnswerService>();
         _userPointServiceMock = new Mock<IUserPointService>();
-        _service = new QuizService(_questionServiceMock.Object, _userAnswerServiceMock.Object, _userPointServiceMock.Object);
+        _loggerMock = new Mock<ILogger<QuizService>>();
+        _service = new QuizService(_questionServiceMock.Object, _userAnswerServiceMock.Object,
+            _userPointServiceMock.Object, _loggerMock?.Object);
     }
 
     // Helpers

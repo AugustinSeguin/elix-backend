@@ -2,6 +2,7 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace ElixBackend.Tests.Business.Services;
@@ -11,12 +12,14 @@ public class ArticleServiceTest
 {
     private Mock<IArticleRepository> _articleRepositoryMock;
     private ArticleService _articleService;
+    private Mock<ILogger<ArticleService>> _loggerMock;
 
     [SetUp]
     public void SetUp()
     {
         _articleRepositoryMock = new Mock<IArticleRepository>();
-        _articleService = new ArticleService(_articleRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<ArticleService>>();
+        _articleService = new ArticleService(_articleRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Test]

@@ -4,6 +4,7 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 
@@ -14,12 +15,14 @@ public class CategoryServiceTest
 {
     private Mock<ICategoryRepository> _categoryRepositoryMock;
     private CategoryService _categoryService;
+    private Mock<ILogger<CategoryService>> _loggerMock;
 
     [SetUp]
     public void SetUp()
     {
         _categoryRepositoryMock = new Mock<ICategoryRepository>();
-        _categoryService = new CategoryService(_categoryRepositoryMock.Object);
+        _loggerMock = new Mock<ILogger<CategoryService>>();
+        _categoryService = new CategoryService(_categoryRepositoryMock.Object, _loggerMock.Object);
     }
 
     [Test]

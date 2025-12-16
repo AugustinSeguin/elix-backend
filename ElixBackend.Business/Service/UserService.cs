@@ -2,10 +2,11 @@ using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Logging;
 
 namespace ElixBackend.Business.Service
 {
-    public class UserService(IUserRepository userRepository) : IUserService
+    public class UserService(IUserRepository userRepository, ILogger<UserService> logger) : IUserService
     {
         // Map User entity to UserDto
         private static UserDto? ToDto(User? user)
@@ -29,46 +30,92 @@ namespace ElixBackend.Business.Service
             };
         }
 
-        // Use existing converter on DTO to produce User entity when needed
-
         public async Task<UserDto?> GetUserByIdAsync(int id)
         {
-            var user = await userRepository.GetUserByIdAsync(id);
-            return ToDto(user);
+            try
+            {
+                var user = await userRepository.GetUserByIdAsync(id);
+                return ToDto(user);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.GetUserByIdAsync failed for id {Id}", id);
+                return null;
+            }
         }
 
         public async Task<UserDto?> GetUserByEmailAsync(string? email)
         {
-            var user = await userRepository.GetUserByEmailAsync(email);
-            return ToDto(user);
+            try
+            {
+                var user = await userRepository.GetUserByEmailAsync(email);
+                return ToDto(user);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.GetUserByEmailAsync failed for email {Email}", email);
+                return null;
+            }
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsersAsync()
+        public async Task<IEnumerable<UserDto>?> GetAllUsersAsync()
         {
-            var users = await userRepository.GetAllUsersAsync();
-            return users.Select(u => ToDto(u)!).Where(d => d != null)!;
+            try
+            {
+                var users = await userRepository.GetAllUsersAsync();
+                return users.Select(u => ToDto(u)!).Where(d => d != null)!;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.GetAllUsersAsync failed");
+                return null;
+            }
         }
 
         public async Task<UserDto?> AddUserAsync(UserDto userDto)
         {
-            var user = userDto.UserDtoToUser(userDto);
-            var newUser = await userRepository.AddUserAsync(user);
-            await userRepository.SaveChangesAsync();
-            return ToDto(newUser);
+            try
+            {
+                var user = userDto.UserDtoToUser(userDto);
+                var newUser = await userRepository.AddUserAsync(user);
+                await userRepository.SaveChangesAsync();
+                return ToDto(newUser);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.AddUserAsync failed for {@UserDto}", userDto);
+                return null;
+            }
         }
 
         public async Task<UserDto?> UpdateUserAsync(UserDto userDto)
         {
-            var user = userDto.UserDtoToUser(userDto);
-            var userUpdated = await userRepository.UpdateUserAsync(user);
-            await userRepository.SaveChangesAsync();
-            return ToDto(userUpdated);
+            try
+            {
+                var user = userDto.UserDtoToUser(userDto);
+                var userUpdated = await userRepository.UpdateUserAsync(user);
+                await userRepository.SaveChangesAsync();
+                return ToDto(userUpdated);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.UpdateUserAsync failed for {@UserDto}", userDto);
+                return null;
+            }
         }
 
-        public async Task DeleteUserAsync(int id)
+        public async Task<bool?> DeleteUserAsync(int id)
         {
-            await userRepository.DeleteUserAsync(id);
-            await userRepository.SaveChangesAsync();
+            try
+            {
+                await userRepository.DeleteUserAsync(id);
+                return await userRepository.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.DeleteUserAsync failed for id {Id}", id);
+                return null;
+            }
         }
     }
 }
