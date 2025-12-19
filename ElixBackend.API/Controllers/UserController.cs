@@ -80,6 +80,16 @@ namespace ElixBackend.API.Controllers
             var passwordHasher = new PasswordHasher<UserDto>();
             userDto.Password = passwordHasher.HashPassword(userDto, userDto.Password);
 
+            // Convertir la date de naissance en UTC si nécessaire (PostgreSQL exige UTC)
+            if (userDto.Birthdate.HasValue && userDto.Birthdate.Value.Kind == DateTimeKind.Unspecified)
+            {
+                userDto.Birthdate = DateTime.SpecifyKind(userDto.Birthdate.Value, DateTimeKind.Utc);
+            }
+            else if (userDto.Birthdate.HasValue && userDto.Birthdate.Value.Kind == DateTimeKind.Local)
+            {
+                userDto.Birthdate = userDto.Birthdate.Value.ToUniversalTime();
+            }
+
             var newUser = await userService.AddUserAsync(userDto);
 
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];
@@ -111,13 +121,22 @@ namespace ElixBackend.API.Controllers
             if (user == null)
                 return NotFound();
 
+            // Convertir le chemin de l'image en URL complète
+            if (!string.IsNullOrWhiteSpace(user.PictureMediaPath))
+            {
+                var request = HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
+                var fileName = Path.GetFileName(user.PictureMediaPath);
+                user.PictureMediaPath = $"{baseUrl}/user/{id}/{fileName}";
+            }
+
             return Ok(user);
         }
 
         // PUT: api/User/{id}
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUserAsync(int id, [FromForm] UserDto userDto, IFormFile? pictureFile)
+        public async Task<IActionResult> UpdateUserAsync(int id, [FromBody] UserDto userDto)
         {
             if (id != userDto.Id)
                 return BadRequest("L'ID dans l'URL doit correspondre à l'ID de l'utilisateur.");
@@ -133,16 +152,74 @@ namespace ElixBackend.API.Controllers
             if (existingUser == null)
                 return NotFound();
 
-            if (pictureFile is { Length: > 0 })
-            {
-                userDto.PictureMediaPath = await MediaHelper.HandleMediaUploadAsync(pictureFile, configuration);
-            }
-            else
+            // Conserver le chemin de l'image existante si non fourni
+            if (string.IsNullOrWhiteSpace(userDto.PictureMediaPath))
             {
                 userDto.PictureMediaPath = existingUser.PictureMediaPath;
             }
 
+            // Gestion du mot de passe
+            if (string.IsNullOrWhiteSpace(userDto.Password))
+            {
+                // Pas de nouveau mot de passe fourni : conserver l'existant
+                userDto.Password = existingUser.Password;
+                userDto.PasswordRepeated = existingUser.Password;
+            }
+            else
+            {
+                // Nouveau mot de passe fourni : vérifier et hasher
+                if (userDto.Password != userDto.PasswordRepeated)
+                {
+                    return BadRequest(new { message = "Les mots de passe ne correspondent pas." });
+                }
+
+                var passwordRegex = new Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$");
+                if (!passwordRegex.IsMatch(userDto.Password))
+                {
+                    return BadRequest("Le mot de passe doit contenir au minimum 8 caractères, dont une majuscule, une minuscule et un chiffre.");
+                }
+
+                var passwordHasher = new PasswordHasher<UserDto>();
+                userDto.Password = passwordHasher.HashPassword(userDto, userDto.Password);
+                userDto.PasswordRepeated = userDto.Password;
+            }
+
+            // Convertir la date de naissance en UTC si nécessaire (PostgreSQL exige UTC)
+            if (userDto.Birthdate.HasValue && userDto.Birthdate.Value.Kind == DateTimeKind.Unspecified)
+            {
+                userDto.Birthdate = DateTime.SpecifyKind(userDto.Birthdate.Value, DateTimeKind.Utc);
+            }
+            else if (userDto.Birthdate.HasValue && userDto.Birthdate.Value.Kind == DateTimeKind.Local)
+            {
+                userDto.Birthdate = userDto.Birthdate.Value.ToUniversalTime();
+            }
+
             var user = await userService.UpdateUserAsync(userDto);
+            return Ok(user);
+        }
+
+        // PUT: api/User/{id}/picture
+        [Authorize]
+        [HttpPut("{id}/picture")]
+        public async Task<IActionResult> UpdateUserPictureAsync(int id, IFormFile pictureFile)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out var userIdFromToken))
+                return Unauthorized();
+
+            if (id != userIdFromToken)
+                return Forbid();
+
+            var existingUser = await userService.GetUserByIdAsync(id);
+            if (existingUser == null)
+                return NotFound();
+
+            if (pictureFile is not { Length: > 0 })
+                return BadRequest("Aucun fichier fourni.");
+
+            existingUser.PictureMediaPath = await MediaHelper.HandleMediaUploadAsync(pictureFile, configuration);
+
+            var user = await userService.UpdateUserAsync(existingUser);
             return Ok(user);
         }
 
@@ -187,11 +264,58 @@ namespace ElixBackend.API.Controllers
             if (userIdClaim == null || !int.TryParse(userIdClaim, out var userId))
                 return Unauthorized();
 
-            var user = await userService.GetUserByIdAsync(userId);
+            var user = await userService.GetMeAsync(userId);
             if (user == null)
                 return NotFound();
 
+            // Convertir le chemin de l'image en URL complète
+            if (!string.IsNullOrWhiteSpace(user.PictureMediaPath))
+            {
+                var request = HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
+                var fileName = Path.GetFileName(user.PictureMediaPath);
+                user.PictureMediaPath = $"{baseUrl}/user/{userId}/{fileName}";
+            }
+
             return Ok(user);
+        }
+
+        // GET: /user/{userId}/{fileName}
+        [HttpGet("/user/{userId}/{fileName}")]
+        public IActionResult GetUserPicture(int userId, string fileName)
+        {
+            try
+            {
+                var uploadsPath = configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
+                var uploadsFolder = Path.IsPathRooted(uploadsPath) 
+                    ? uploadsPath 
+                    : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
+                
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    return NotFound("Image non trouvée.");
+                }
+
+                var contentType = "image/jpeg";
+                var extension = Path.GetExtension(fileName).ToLowerInvariant();
+                contentType = extension switch
+                {
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".png" => "image/png",
+                    ".gif" => "image/gif",
+                    ".webp" => "image/webp",
+                    _ => "application/octet-stream"
+                };
+
+                var imageBytes = System.IO.File.ReadAllBytes(filePath);
+                return File(imageBytes, contentType);
+            }
+            catch (Exception)
+            {
+                return NotFound("Erreur lors de la récupération de l'image.");
+            }
         }
     }
 }

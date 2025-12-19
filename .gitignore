@@ -42,3 +42,4 @@ Thumbs.db
 
 # Static files
 **/wwwroot/
+ElixBackend.API/temp/ 

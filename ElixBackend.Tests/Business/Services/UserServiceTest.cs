@@ -124,4 +124,30 @@ public class UserServiceTest
         _userRepositoryMock.Verify(r => r.DeleteUserAsync(5), Times.Once);
         _userRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
+
+    [Test]
+    public async Task GetMeAsync_ReturnsUserDto()
+    {
+        var user = new User { Id = 6, Firstname = "Charlie", Lastname = "Brown", Email = "charlie@brown.com", PasswordHash = "hash" };
+        _userRepositoryMock.Setup(r => r.GetUserByIdAsync(6)).ReturnsAsync(user);
+
+        var result = await _userService.GetMeAsync(6);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Id, Is.EqualTo(user.Id));
+        Assert.That(result.Email, Is.EqualTo(user.Email));
+        Assert.That(result.Firstname, Is.EqualTo(user.Firstname));
+        _userRepositoryMock.Verify(r => r.GetUserByIdAsync(6), Times.Once);
+    }
+
+    [Test]
+    public async Task GetMeAsync_ReturnsNull_WhenUserNotFound()
+    {
+        _userRepositoryMock.Setup(r => r.GetUserByIdAsync(999)).ReturnsAsync((User?)null);
+
+        var result = await _userService.GetMeAsync(999);
+
+        Assert.That(result, Is.Null);
+        _userRepositoryMock.Verify(r => r.GetUserByIdAsync(999), Times.Once);
+    }
 }

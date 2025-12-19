@@ -117,5 +117,19 @@ namespace ElixBackend.Business.Service
                 return null;
             }
         }
+
+        public async Task<UserDto?> GetMeAsync(int userId)
+        {
+            try
+            {
+                var user = await userRepository.GetUserByIdAsync(userId);
+                return ToDto(user);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "UserService.GetMeAsync failed for userId {UserId}", userId);
+                return null;
+            }
+        }
     }
 }
