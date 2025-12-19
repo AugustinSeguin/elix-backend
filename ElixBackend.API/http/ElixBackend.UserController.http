@@ -1,5 +1,5 @@
 @ElixBackend_HostAddress = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiNDM1YzA2NGUtZTUyMi00MTk1LTlhMTktMDk0MDg5OWRhYWYxIiwibmJmIjoxNzY0Njg3ODg3LCJleHAiOjE3NjQ2OTUwODcsImlhdCI6MTc2NDY4Nzg4N30.aSOK30jTvbKGdyZ3eiVdhdX82U8LeFh2-aqVp4H0It0
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiNDFjYzkzNTQtZDk2Yy00YWFlLTg1ZWItMjY4YjYzN2ExNGE1IiwibmJmIjoxNzY2MTU0MTIxLCJleHAiOjE3NjYxNjEzMjEsImlhdCI6MTc2NjE1NDEyMX0.tlq03gmUw-Roi8LUartuFTqRFap1MQ3JGvnpdL6_7gw
 
 ### LOGIN
 POST {{ElixBackend_HostAddress}}/api/User/login
@@ -17,18 +17,24 @@ POST {{ElixBackend_HostAddress}}/api/User/register
 Content-Type: application/json
 
 {
-  "email": "us1er@email.com",
+  "email": "us1Aer@email.com",
   "password": "MotDePasse123",
   "passwordRepeated": "MotDePasse123",
   "firstname": "John",
   "lastname": "Doe",
-  "username": "johndoe1",
+  "username": "johnAdoe1",
   "birthdate": "2000-01-01T00:00:00",
   "gender": 0,
   "isPremium": false,
   "phoneNumber": 123456789,
   "isAdmin": true
 }
+
+###
+
+### GET USER ME (auth)
+GET {{ElixBackend_HostAddress}}/api/User/me
+Authorization: Bearer {{token}}
 
 ###
 
