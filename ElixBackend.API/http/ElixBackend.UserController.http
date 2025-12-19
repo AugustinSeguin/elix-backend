@@ -1,12 +1,12 @@
 @ElixBackend_HostAddress = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiNDM1YzA2NGUtZTUyMi00MTk1LTlhMTktMDk0MDg5OWRhYWYxIiwibmJmIjoxNzY0Njg3ODg3LCJleHAiOjE3NjQ2OTUwODcsImlhdCI6MTc2NDY4Nzg4N30.aSOK30jTvbKGdyZ3eiVdhdX82U8LeFh2-aqVp4H0It0
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0Iiwicm9sZSI6ImFkbWluIiwianRpIjoiNDJlMDhhNzQtY2EyNC00N2E3LWEyMTAtY2Y1Yzk3MjdiMzFmIiwibmJmIjoxNzY2MTYwNTk3LCJleHAiOjE3NjYxNjc3OTcsImlhdCI6MTc2NjE2MDU5N30.lJMCO-7aGEWwq2BdVwY3MMiaso9ybLTZROizhUBAfNY
 
 ### LOGIN
 POST {{ElixBackend_HostAddress}}/api/User/login
 Content-Type: application/json
 
 {
-  "email": "us1er@email.com",
+  "email": "augustin@email.com",
   "password": "MotDePasse123"
 }
 
@@ -17,18 +17,29 @@ POST {{ElixBackend_HostAddress}}/api/User/register
 Content-Type: application/json
 
 {
-  "email": "us1er@email.com",
+  "email": "augustin@email.com",
   "password": "MotDePasse123",
   "passwordRepeated": "MotDePasse123",
   "firstname": "John",
   "lastname": "Doe",
-  "username": "johndoe1",
-  "birthdate": "2000-01-01T00:00:00",
+  "username": "gus1",
+  "birthdate": "2000-01-01T00:00:00Z",
   "gender": 0,
   "isPremium": false,
   "phoneNumber": 123456789,
   "isAdmin": true
 }
+
+###
+
+### GET USER ME (auth)
+GET {{ElixBackend_HostAddress}}/api/User/me
+Authorization: Bearer {{token}}
+
+###
+
+### GET USER PICTURE (public)
+GET {{ElixBackend_HostAddress}}/user/1/bec1f94f-d4a8-4593-a4c4-055b26459f4e.jpg
 
 ###
 
@@ -46,17 +57,31 @@ Content-Type: application/json
 {
   "id": 1,
   "email": "user@email.com",
-  "password": "MotDePasse123",
-  "passwordRepeated": "MotDePasse123",
+  "password": "",
+  "passwordRepeated": "",
   "firstname": "John",
   "lastname": "Doe",
   "username": "johndoe",
-  "birthdate": "2000-01-01T00:00:00",
+  "birthdate": "2000-01-01T00:00:00Z",
   "gender": 0,
   "isPremium": false,
   "phoneNumber": 123456789,
   "isAdmin": false
 }
+
+###
+
+### UPDATE USER PICTURE (auth)
+PUT {{ElixBackend_HostAddress}}/api/User/1/picture
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="pictureFile"; filename="profile.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/your/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###
 

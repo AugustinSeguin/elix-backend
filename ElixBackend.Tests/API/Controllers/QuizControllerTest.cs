@@ -112,12 +112,10 @@ public class QuizControllerTest
             }
         };
 
-        var expectedResult = new QuizDto
+        var expectedResult = new List<CorrectionDto>
         {
-            Id = 1,
-            Title = "Quiz - Catégorie 1 - Résultat: 8/10",
-            CategoryId = 1,
-            Questions = new List<QuestionDto>()
+            new CorrectionDto { QuestionId = 1, IsCorrect = true },
+            new CorrectionDto { QuestionId = 2, IsCorrect = true }
         };
 
         _quizServiceMock.Setup(s => s.SubmitQuizAsync(quizSubmission))
@@ -170,7 +168,7 @@ public class QuizControllerTest
         };
 
         _quizServiceMock.Setup(s => s.SubmitQuizAsync(quizSubmission))
-            .ReturnsAsync((QuizDto?)null);
+            .ReturnsAsync((List<CorrectionDto>?)null);
 
         // Act
         var result = await _controller.SubmitQuiz(quizSubmission);
@@ -197,10 +195,10 @@ public class QuizControllerTest
             }
         };
 
-        var expectedResult = new QuizDto
+        var expectedResult = new List<CorrectionDto>
         {
-            Title = "Quiz - Catégorie 3 - Résultat: 2/2",
-            CategoryId = 3
+            new CorrectionDto { QuestionId = 10, IsCorrect = true },
+            new CorrectionDto { QuestionId = 11, IsCorrect = false }
         };
 
         _quizServiceMock.Setup(s => s.SubmitQuizAsync(It.Is<QuizSubmissionDto>(
@@ -244,4 +242,3 @@ public class QuizControllerTest
         _quizServiceMock.Verify(s => s.StartQuizAsync(userId2, categoryId), Times.Once);
     }
 }
-

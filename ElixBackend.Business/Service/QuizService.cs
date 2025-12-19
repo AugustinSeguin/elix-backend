@@ -23,6 +23,18 @@ public class QuizService(
                 return null;
             }
 
+            // Filtrer les questions : au minimum 2 réponses et 1 réponse valide
+            questionDtos = questionDtos.Where(q => 
+                q.Answers != null && 
+                q.Answers.Count() >= 2 && 
+                q.Answers.Any(a => a.IsValid)
+            ).ToList();
+
+            if (!questionDtos.Any())
+            {
+                return null;
+            }
+
             // Grouper les réponses de l'utilisateur par question
             var userAnswersByQuestion = new Dictionary<int, List<UserAnswerDto>>();
 
@@ -103,7 +115,7 @@ public class QuizService(
     }
 
 
-    public async Task<QuizDto?> SubmitQuizAsync(QuizSubmissionDto quizSubmission)
+    public async Task<List<CorrectionDto>?> SubmitQuizAsync(QuizSubmissionDto quizSubmission)
     {
         try
         {
@@ -120,6 +132,8 @@ public class QuizService(
             {
                 return null;
             }
+
+            var corrections = new List<CorrectionDto>();
 
             // Traiter chaque réponse de l'utilisateur
             foreach (var userAnswer in quizSubmission.UserAnswers)
@@ -156,6 +170,18 @@ public class QuizService(
                 };
 
                 await userAnswerService.AddUserAsync(userAnswerEntity);
+
+                // Créer l'objet CorrectionDto
+                var correction = new CorrectionDto
+                {
+                    QuestionId = question.Id,
+                    Question = question,
+                    SelectedAnswerId = userAnswer.AnswerIdSelected,
+                    IsCorrect = isCorrect,
+                    Explanation = correctAnswer.Explanation,
+                    Answer = correctAnswer
+                };
+                corrections.Add(correction);
             }
 
             // Si l'utilisateur a au moins 8 bonnes réponses sur 10, il gagne des points
@@ -171,15 +197,7 @@ public class QuizService(
                 await userPointService.AddUserPointAsync(userPointDto);
             }
 
-            // Retourner le quiz avec les questions (pour afficher les corrections côté client)
-            var quizDto = new QuizDto
-            {
-                Title = $"Quiz - Catégorie {categoryId} - Résultat: {correctAnswersCount}/{totalQuestions}",
-                CategoryId = categoryId,
-                Questions = questionsList.Where(q => quizSubmission.UserAnswers.Any(ua => ua.QuestionId == q.Id)).ToList()
-            };
-
-            return quizDto;
+            return corrections;
         }
         catch (Exception ex)
         {

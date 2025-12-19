@@ -25,7 +25,7 @@ public class QuizController(IQuizService quizService) : ControllerBase
 
     [HttpPost("SubmitQuiz")]
     [Authorize]
-    public async Task<ActionResult<QuizDto>> SubmitQuiz([FromBody] QuizSubmissionDto quizSubmission)
+    public async Task<ActionResult<List<CorrectionDto>>> SubmitQuiz([FromBody] QuizSubmissionDto quizSubmission)
     {
         if (!quizSubmission.UserAnswers.Any())
         {
