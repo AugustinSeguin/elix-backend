@@ -5,5 +5,5 @@ namespace ElixBackend.Business.IService;
 public interface IQuizService
 {
     Task<QuizDto?> StartQuizAsync(int userId, int categoryId);
-    Task<QuizDto?> SubmitQuizAsync(QuizSubmissionDto quizSubmission);
+    Task<List<CorrectionDto>?> SubmitQuizAsync(QuizSubmissionDto quizSubmission);
 }
