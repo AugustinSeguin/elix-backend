@@ -1,3 +1,4 @@
+@using ElixBackend.Domain.Enum
 @model ElixBackend.Business.DTO.UserDto
 
 @{
@@ -77,9 +78,9 @@
                     <label asp-for="Gender" class="form-label">Genre</label>
                     <select asp-for="Gender" name="Gender" class="form-control">
                         <option value="">-- Sélectionner --</option>
-                        <option value="1" selected="@(Model?.Gender == ElixBackend.Domain.Helpers.Gender.Male)">Homme</option>
-                        <option value="0" selected="@(Model?.Gender == ElixBackend.Domain.Helpers.Gender.Female)">Femme</option>
-                        <option value="2" selected="@(Model?.Gender == ElixBackend.Domain.Helpers.Gender.Other)">Autre</option>
+                        <option value="1" selected="@(Model?.Gender == Gender.Male)">Homme</option>
+                        <option value="0" selected="@(Model?.Gender == Gender.Female)">Femme</option>
+                        <option value="2" selected="@(Model?.Gender == Gender.Other)">Autre</option>
                     </select>
                     <span asp-validation-for="Gender" class="text-danger"></span>
                 </div>

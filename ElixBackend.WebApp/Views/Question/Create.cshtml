@@ -41,6 +41,12 @@
             </div>
 
             <div class="mb-3">
+                <label asp-for="TypeQuestion" class="form-label">Type de question</label>
+                @Html.DropDownListFor(model => model.TypeQuestion, (IEnumerable<SelectListItem>)ViewBag.TypeQuestions, new { @class = "form-control" })
+                <span asp-validation-for="TypeQuestion" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">Média (optionnel)</label>
                 <input type="file" name="mediaFile" id="mediaFile" class="form-control" accept="image/*,video/*" onchange="previewMedia(this)"/>
                 <small class="form-text text-muted">Formats acceptés : Images (JPG, PNG, GIF) ou Vidéos (MP4, WEBM)</small>

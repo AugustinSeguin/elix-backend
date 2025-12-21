@@ -1,5 +1,5 @@
 using ElixBackend.Domain.Entities;
-using ElixBackend.Domain.Helpers;
+using ElixBackend.Domain.Enum;
 
 namespace ElixBackend.Business.DTO
 {

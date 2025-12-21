@@ -16,6 +16,7 @@ public class QuestionService(IQuestionRepository questionRepository, ILogger<Que
             {
                 Title = questionDto.Title,
                 MediaPath = questionDto.MediaPath,
+                TypeQuestion = questionDto.TypeQuestion,
                 CategoryId = questionDto.CategoryId
             };
             var result = await questionRepository.AddQuestionAsync(question);
@@ -80,6 +81,7 @@ public class QuestionService(IQuestionRepository questionRepository, ILogger<Que
                 Id = questionDto.Id,
                 Title = questionDto.Title,
                 MediaPath = questionDto.MediaPath,
+                TypeQuestion = questionDto.TypeQuestion,
                 CategoryId = questionDto.CategoryId
             };
             var result = await questionRepository.UpdateQuestionAsync(question);
