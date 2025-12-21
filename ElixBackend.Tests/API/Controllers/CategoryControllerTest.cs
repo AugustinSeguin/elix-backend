@@ -2,6 +2,7 @@ using ElixBackend.API.Controllers;
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Moq;
 
 namespace ElixBackend.Tests.API.Controllers;
@@ -17,7 +18,9 @@ public class CategoryControllerTest
     public void SetUp()
     {
         _categoryServiceMock = new Mock<ICategoryService>();
-        _controller = new CategoryController(_categoryServiceMock.Object);
+        var configMock = new Mock<IConfiguration>();
+        configMock.Setup(c => c["FileStorage:UploadsPath"]).Returns("./temp");
+        _controller = new CategoryController(_categoryServiceMock.Object, configMock.Object);
     }
 
     [Test]
@@ -88,6 +91,9 @@ public class CategoryControllerTest
     {
         var dto = new CategoryDto { Id = 4, Title = "D", Description = "descD" };
         var updated = new CategoryDto { Id = 4, Title = "D", Description = "descD" };
+        
+        // Mock GetCategoryByIdAsync pour que la catégorie soit trouvée
+        _categoryServiceMock.Setup(s => s.GetCategoryByIdAsync(4)).ReturnsAsync(dto);
         _categoryServiceMock.Setup(s => s.UpdateCategoryAsync(dto)).ReturnsAsync(updated);
 
         var result = await _controller.Update(4, dto);
@@ -101,23 +107,45 @@ public class CategoryControllerTest
     }
 
     [Test]
-    public async Task Update_ReturnsBadRequestIfIdMismatch()
+    public async Task Update_ReturnsBadRequest_WhenIdMismatch()
     {
-        var dto = new CategoryDto { Id = 5, Title = "E", Description = "descE" };
+        var dto = new CategoryDto { Id = 4, Title = "D", Description = "descD" };
 
-        var result = await _controller.Update(6, dto);
+        var result = await _controller.Update(5, dto);
 
         Assert.That(result.Result, Is.TypeOf<BadRequestResult>());
     }
 
     [Test]
-    public async Task DeleteCategory_ReturnsNoContent()
+    public async Task Update_ReturnsNotFound_WhenCategoryDoesNotExist()
     {
-        var categoryId = 7;
-        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(categoryId)).ReturnsAsync(true);
+        var dto = new CategoryDto { Id = 99, Title = "D", Description = "descD" };
+        _categoryServiceMock.Setup(s => s.GetCategoryByIdAsync(99)).ReturnsAsync((CategoryDto?)null);
 
-        var result = await _controller.Delete(categoryId);
+        var result = await _controller.Update(99, dto);
+
+        Assert.That(result.Result, Is.TypeOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task Delete_ReturnsNoContent()
+    {
+        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(1)).ReturnsAsync(true);
+
+        var result = await _controller.Delete(1);
 
         Assert.That(result, Is.TypeOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task Delete_ReturnsProblem_WhenFailed()
+    {
+        _categoryServiceMock.Setup(s => s.DeleteCategoryAsync(99)).ReturnsAsync((bool?)null);
+
+        var result = await _controller.Delete(99);
+
+        Assert.That(result, Is.TypeOf<ObjectResult>());
+        var objResult = result as ObjectResult;
+        Assert.That(objResult!.StatusCode, Is.EqualTo(500));
     }
 }

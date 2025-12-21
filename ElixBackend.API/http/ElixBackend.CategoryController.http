@@ -38,6 +38,25 @@ Content-Type: application/json
 
 ###
 
+### UPDATE CATEGORY IMAGE (auth)
+PUT {{ElixBackend_HostAddress}}/api/Category/1/image
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="imageFile"; filename="category.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/your/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###
+
+### GET CATEGORY IMAGE (public)
+GET {{ElixBackend_HostAddress}}/category/1/image-filename.jpg
+
+###
+
 ### DELETE CATEGORY (auth)
 DELETE {{ElixBackend_HostAddress}}/api/Category/1
 Authorization: Bearer {{token}}

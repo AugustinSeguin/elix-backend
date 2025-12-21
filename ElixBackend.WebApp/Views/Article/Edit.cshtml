@@ -51,20 +51,13 @@
 
                 <div class="mb-3">
                     <label class="form-label">Média (optionnel)</label>
+                    <input type="file" name="imageFile" id="imageFile" class="form-control" accept="image/*" onchange="previewImage(this)" />
+                    
                     @if (!string.IsNullOrEmpty(Model?.MediaPath))
                     {
-                        <div class="mb-2">
-                            <strong>Média actuel :</strong>
-                            @if (Model.MediaPath.EndsWith(".mp4") || Model.MediaPath.EndsWith(".webm"))
-                            {
-                                <video controls class="img-thumbnail d-block" style="max-width: 300px; max-height: 300px;">
-                                    <source src="@Model.MediaPath" type="video/@(Model.MediaPath.EndsWith(".mp4") ? "mp4" : "webm")">
-                                </video>
-                            }
-                            else
-                            {
-                                <img src="@Model.MediaPath" class="img-thumbnail d-block" style="max-width: 300px; max-height: 300px;" alt="Média actuel">
-                            }
+                        <div class="mt-2" id="currentImage">
+                            <p>Image actuelle :</p>
+                            <img src="@Url.Content($"~/uploads/{System.IO.Path.GetFileName(Model.MediaPath)}")" alt="Image de l'article" style="max-width: 200px; max-height: 200px;" />
                         </div>
                     }
                     <input type="file" name="mediaFile" id="mediaFile" class="form-control" accept="image/*,video/*" onchange="previewMedia(this)"/>
@@ -87,26 +80,25 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial"/>
     <script>
-        function previewMedia(input) {
-            const preview = document.getElementById('mediaPreview');
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            const currentImage = document.getElementById('currentImage');
             preview.innerHTML = '';
             
             if (input.files && input.files[0]) {
+                if(currentImage) currentImage.style.display = 'none';
+                
                 const file = input.files[0];
-                const fileType = file.type;
                 const reader = new FileReader();
                 
                 reader.onload = function(e) {
-                    if (fileType.startsWith('image/')) {
-                        preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" alt="Aperçu image">`;
-                    } else if (fileType.startsWith('video/')) {
-                        preview.innerHTML = `<video controls class="img-thumbnail" style="max-width: 300px; max-height: 300px;"><source src="${e.target.result}" type="${fileType}">Votre navigateur ne supporte pas la vidéo.</video>`;
-                    }
+                    preview.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" alt="Aperçu image">`;
                 }
                 
                 reader.readAsDataURL(file);
+            } else {
+                if(currentImage) currentImage.style.display = 'block';
             }
         }
     </script>
 }
-
