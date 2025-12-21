@@ -1,3 +1,5 @@
+using ElixBackend.Domain.Enum;
+
 namespace ElixBackend.Domain.Entities;
 
 public class Question
@@ -7,9 +9,11 @@ public class Question
     public required string Title { get; set; }
 
     public string? MediaPath { get; set; }
-    
+
+    public TypeQuestion TypeQuestion { get; set; }
+
     public int CategoryId { get; set; }
     public Category? Category { get; set; }
-    
+
     public IEnumerable<Answer>? Answers { get; set; }
 }

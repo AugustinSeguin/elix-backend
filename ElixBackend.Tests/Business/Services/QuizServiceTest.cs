@@ -1,6 +1,7 @@
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.Service;
+using ElixBackend.Domain.Enum;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework.Legacy;
@@ -28,13 +29,14 @@ public class QuizServiceTest
     }
 
     // Helpers
-    private static QuestionDto MakeQuestion(int id, int categoryId, bool withAnswers = false)
+    private static QuestionDto MakeQuestion(int id, int categoryId, bool withAnswers = false, TypeQuestion type = TypeQuestion.QuizModeMcq)
     {
         var q = new QuestionDto
         {
             Id = id,
             Title = $"Q{id}",
-            CategoryId = categoryId
+            CategoryId = categoryId,
+            TypeQuestion = type
         };
         if (withAnswers)
         {
@@ -72,11 +74,57 @@ public class QuizServiceTest
     }
 
     [Test]
+    public async Task StartQuizAsync_ReturnsMixedQuestions_WhenEnoughQuestionsAvailable()
+    {
+        var categoryId = 10;
+        var questions = new List<QuestionDto>();
+
+        // 10 MCQ questions
+        for (int i = 1; i <= 10; i++)
+        {
+            questions.Add(MakeQuestion(i, categoryId, withAnswers: true, type: TypeQuestion.QuizModeMcq));
+        }
+        // 10 TF questions
+        for (int i = 11; i <= 20; i++)
+        {
+            questions.Add(MakeQuestion(i, categoryId, withAnswers: true, type: TypeQuestion.TrueFalseActive));
+        }
+
+        _questionServiceMock.Setup(s => s.GetQuestionsByCategoryIdAsync(categoryId)).ReturnsAsync(questions);
+        _userAnswerServiceMock.Setup(s => s.GetUserAnswerByUserIdAsync(It.IsAny<int>(), It.IsAny<int>()))
+            .ReturnsAsync((IEnumerable<UserAnswerDto>?)null);
+
+        var result = await _service.StartQuizAsync(1, categoryId);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Questions.Count, Is.EqualTo(10));
+
+        var resultQuestions = result.Questions.ToList();
+
+        // Check counts
+        Assert.That(resultQuestions.Count(q => q.TypeQuestion == TypeQuestion.QuizModeMcq), Is.EqualTo(5));
+        Assert.That(resultQuestions.Count(q => q.TypeQuestion == TypeQuestion.TrueFalseActive), Is.EqualTo(5));
+
+        // Check pattern: 2 TF, 2 MCQ, 2 TF, 2 MCQ, 1 TF, 1 MCQ
+        Assert.That(resultQuestions[0].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
+        Assert.That(resultQuestions[1].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
+        Assert.That(resultQuestions[2].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[3].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[4].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
+        Assert.That(resultQuestions[5].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
+        Assert.That(resultQuestions[6].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[7].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[8].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
+        Assert.That(resultQuestions[9].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+    }
+
+    [Test]
     public async Task StartQuizAsync_Prioritizes_NotAnswered_Then_Incorrect_Then_Correct_And_Takes10()
     {
         var categoryId = 2;
         // 12 questions avec réponses (au minimum 2 réponses et 1 réponse valide)
-        var questions = Enumerable.Range(1, 12).Select(i => MakeQuestion(i, categoryId, withAnswers: true)).ToList();
+        // All MCQ to simplify testing priority within one type
+        var questions = Enumerable.Range(1, 12).Select(i => MakeQuestion(i, categoryId, withAnswers: true, type: TypeQuestion.QuizModeMcq)).ToList();
         _questionServiceMock.Setup(s => s.GetQuestionsByCategoryIdAsync(categoryId)).ReturnsAsync(questions);
 
         // User answers: none for Q1..Q6 (not answered), incorrect for Q7..Q11, correct for Q12
@@ -101,9 +149,11 @@ public class QuizServiceTest
         var result = await _service.StartQuizAsync(1, categoryId);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.Questions.Count, Is.EqualTo(10));
-        // Should contain Q1..Q6 (not answered) and then 4 from incorrect Q7..Q10
-        var expectedIds = Enumerable.Range(1, 6).Concat(Enumerable.Range(7, 4)).ToArray();
+        // We only have MCQ, so it should take top 5 MCQ.
+        Assert.That(result!.Questions.Count, Is.EqualTo(5));
+
+        // Should contain Q1..Q5 (not answered)
+        var expectedIds = Enumerable.Range(1, 5).ToArray();
         CollectionAssert.AreEqual(expectedIds, result.Questions.Select(q => q.Id).ToArray());
     }
 
@@ -111,7 +161,12 @@ public class QuizServiceTest
     public async Task StartQuizAsync_AllCorrect_SelectsFromCorrectlyAnswered_WhenNeeded()
     {
         var categoryId = 3;
-        var questions = Enumerable.Range(1, 10).Select(i => MakeQuestion(i, categoryId, withAnswers: true)).ToList();
+        var questions = new List<QuestionDto>();
+        // 5 MCQ
+        questions.AddRange(Enumerable.Range(1, 5).Select(i => MakeQuestion(i, categoryId, withAnswers: true, type: TypeQuestion.QuizModeMcq)));
+        // 5 TF
+        questions.AddRange(Enumerable.Range(6, 5).Select(i => MakeQuestion(i, categoryId, withAnswers: true, type: TypeQuestion.TrueFalseActive)));
+
         _questionServiceMock.Setup(s => s.GetQuestionsByCategoryIdAsync(categoryId)).ReturnsAsync(questions);
 
         foreach (var q in questions)
@@ -124,7 +179,8 @@ public class QuizServiceTest
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Questions.Count, Is.EqualTo(10));
-        CollectionAssert.AreEqual(Enumerable.Range(1, 10).ToArray(), result.Questions.Select(q => q.Id).ToArray());
+        // Order might be mixed (2 TF, 2 MCQ...), so we just check content
+        CollectionAssert.AreEquivalent(Enumerable.Range(1, 10).ToArray(), result.Questions.Select(q => q.Id).ToArray());
     }
 
     [Test]

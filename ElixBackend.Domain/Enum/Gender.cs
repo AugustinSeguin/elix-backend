@@ -1,4 +1,4 @@
-namespace ElixBackend.Domain.Helpers
+namespace ElixBackend.Domain.Enum
 {
     public enum Gender
     {

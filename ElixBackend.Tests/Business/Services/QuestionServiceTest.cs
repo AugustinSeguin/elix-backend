@@ -1,6 +1,7 @@
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
+using ElixBackend.Domain.Enum;
 using ElixBackend.Infrastructure.IRepository;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -25,8 +26,8 @@ public class QuestionServiceTest
     [Test]
     public async Task AddQuestionAsync_CallsRepositoryAndReturnsDto()
     {
-        var dto = new QuestionDto { Title = "Q" };
-        var question = new Question { Id = 1, Title = "Q" };
+        var dto = new QuestionDto { Title = "Q", TypeQuestion = TypeQuestion.TrueFalseActive };
+        var question = new Question { Id = 1, Title = "Q", TypeQuestion = TypeQuestion.TrueFalseActive };
         _questionRepositoryMock.Setup(r => r.AddQuestionAsync(It.IsAny<Question>())).ReturnsAsync(question);
         _questionRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
@@ -35,7 +36,8 @@ public class QuestionServiceTest
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Id, Is.EqualTo(question.Id));
         Assert.That(result.Title, Is.EqualTo(question.Title));
-        _questionRepositoryMock.Verify(r => r.AddQuestionAsync(It.Is<Question>(q => q.Title == dto.Title)), Times.Once);
+        Assert.That(result.TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
+        _questionRepositoryMock.Verify(r => r.AddQuestionAsync(It.Is<Question>(q => q.Title == dto.Title && q.TypeQuestion == TypeQuestion.TrueFalseActive)), Times.Once);
         _questionRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 

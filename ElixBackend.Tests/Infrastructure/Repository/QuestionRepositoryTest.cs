@@ -1,4 +1,5 @@
 using ElixBackend.Domain.Entities;
+using ElixBackend.Domain.Enum;
 using ElixBackend.Infrastructure;
 using ElixBackend.Infrastructure.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -31,13 +32,14 @@ public class QuestionRepositoryTest
     [Test]
     public async Task AddQuestionAsync_AddsQuestionAndReturnsIt()
     {
-        var question = new Question { Title = "Q1", MediaPath = "p" };
+        var question = new Question { Title = "Q1", MediaPath = "p", TypeQuestion = TypeQuestion.QuizModeMcq };
 
         var result = await _repository.AddQuestionAsync(question);
         await _repository.SaveChangesAsync();
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Title, Is.EqualTo("Q1"));
+        Assert.That(result.TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
         Assert.That(await _context.Questions.AnyAsync(q => q.Title == "Q1"), Is.True);
     }
 

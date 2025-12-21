@@ -1,12 +1,13 @@
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
+using ElixBackend.Domain.Enum;
 using Microsoft.Extensions.Logging;
 
 namespace ElixBackend.Business.Service;
 
 public class QuizService(
-    IQuestionService questionService, 
-    IUserAnswerService userAnswerService, 
+    IQuestionService questionService,
+    IUserAnswerService userAnswerService,
     IUserPointService userPointService,
     ILogger<QuizService> logger) : IQuizService
 {
@@ -24,9 +25,9 @@ public class QuizService(
             }
 
             // Filtrer les questions : au minimum 2 réponses et 1 réponse valide
-            questionDtos = questionDtos.Where(q => 
-                q.Answers != null && 
-                q.Answers.Count() >= 2 && 
+            questionDtos = questionDtos.Where(q =>
+                q.Answers != null &&
+                q.Answers.Count() >= 2 &&
                 q.Answers.Any(a => a.IsValid)
             ).ToList();
 
@@ -41,7 +42,7 @@ public class QuizService(
             foreach (var question in questionDtos)
             {
                 var userAnswers = await userAnswerService.GetUserAnswerByUserIdAsync(userId, question.Id);
-                var userAnswersList = (userAnswers).Where(ua => ua != null).Select(ua => ua!).ToList();
+                var userAnswersList = (userAnswers ?? []).Where(ua => ua != null).Select(ua => ua!).ToList();
 
                 if (userAnswersList.Any())
                 {
@@ -75,26 +76,43 @@ public class QuizService(
                 }
             }
 
-            // Sélectionner jusqu'à 10 questions (priorité : non répondues > incorrectes > correctes)
-            var selectedQuestions = new List<QuestionDto>();
+            // Créer une liste ordonnée de toutes les questions candidates par priorité
+            var allCandidates = new List<QuestionDto>();
+            allCandidates.AddRange(notAnsweredQuestions);
+            allCandidates.AddRange(incorrectlyAnsweredQuestions);
+            allCandidates.AddRange(correctlyAnsweredQuestions);
 
-            selectedQuestions.AddRange(notAnsweredQuestions.Take(10));
+            // Séparer par type
+            var candidatesMCQ = allCandidates.Where(q => q.TypeQuestion == TypeQuestion.QuizModeMcq).ToList();
+            var candidatesTF = allCandidates.Where(q => q.TypeQuestion == TypeQuestion.TrueFalseActive).ToList();
 
-            if (selectedQuestions.Count < 10)
-            {
-                var remaining = 10 - selectedQuestions.Count;
-                selectedQuestions.AddRange(incorrectlyAnsweredQuestions.Take(remaining));
-            }
+            // Sélectionner 5 de chaque (ou moins si pas assez)
+            var selectedMCQ = candidatesMCQ.Take(5).ToList();
+            var selectedTF = candidatesTF.Take(5).ToList();
 
-            if (selectedQuestions.Count < 10)
-            {
-                var remaining = 10 - selectedQuestions.Count;
-                selectedQuestions.AddRange(correctlyAnsweredQuestions.Take(remaining));
-            }
-
-            if (!selectedQuestions.Any())
+            if (!selectedMCQ.Any() && !selectedTF.Any())
             {
                 return null;
+            }
+
+            // Organiser selon le pattern : 2 TF, 2 MCQ, répété
+            var finalSelection = new List<QuestionDto>();
+            int mcqIndex = 0;
+            int tfIndex = 0;
+
+            while (mcqIndex < selectedMCQ.Count || tfIndex < selectedTF.Count)
+            {
+                // Ajouter jusqu'à 2 TF
+                for (int i = 0; i < 2 && tfIndex < selectedTF.Count; i++)
+                {
+                    finalSelection.Add(selectedTF[tfIndex++]);
+                }
+
+                // Ajouter jusqu'à 2 MCQ
+                for (int i = 0; i < 2 && mcqIndex < selectedMCQ.Count; i++)
+                {
+                    finalSelection.Add(selectedMCQ[mcqIndex++]);
+                }
             }
 
             // Les réponses sont déjà incluses dans les QuestionDto
@@ -102,7 +120,7 @@ public class QuizService(
             {
                 Title = $"Quiz - Catégorie {categoryId}",
                 CategoryId = categoryId,
-                Questions = selectedQuestions
+                Questions = finalSelection
             };
 
             return quizDto;
@@ -139,7 +157,7 @@ public class QuizService(
             foreach (var userAnswer in quizSubmission.UserAnswers)
             {
                 var question = questionsList.FirstOrDefault(q => q.Id == userAnswer.QuestionId);
-                
+
                 if (question?.Answers == null || !question.Answers.Any())
                 {
                     continue;
@@ -147,7 +165,7 @@ public class QuizService(
 
                 // Trouver la réponse correcte pour cette question
                 var correctAnswer = question.Answers.FirstOrDefault(a => a.IsValid);
-                
+
                 if (correctAnswer == null)
                 {
                     continue;

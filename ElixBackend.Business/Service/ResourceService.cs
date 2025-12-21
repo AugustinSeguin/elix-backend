@@ -8,19 +8,19 @@ namespace ElixBackend.Business.Service;
 
 public class ResourceService(IResourceRepository resourceRepository, ILogger<ResourceService> logger) : IResourceService
 {
-    public async Task<ResourceDto?> AddResourceAsync(ResourceDto resourceDto)
+    public async Task<ResourceDto?> AddResourceAsync(ResourceDto resource)
     {
         try
         {
             var resourceEntity = new Resource
             {
-                Name = resourceDto.Name,
+                Name = resource.Name,
                 Localization = new Localization
                 {
-                    Latitude = resourceDto.Localization.Latitude,
-                    Longitude = resourceDto.Localization.Longitude
+                    Latitude = resource.Localization.Latitude,
+                    Longitude = resource.Localization.Longitude
                 },
-                PhoneNumber = resourceDto.PhoneNumber
+                PhoneNumber = resource.PhoneNumber
             };
             var result = await resourceRepository.AddResourceAsync(resourceEntity);
             await resourceRepository.SaveChangesAsync();
@@ -28,7 +28,7 @@ public class ResourceService(IResourceRepository resourceRepository, ILogger<Res
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "ResourceService.AddResourceAsync failed for {@Resource}", resourceDto);
+            logger.LogError(ex, "ResourceService.AddResourceAsync failed for {@Resource}", resource);
             return null;
         }
     }
@@ -61,20 +61,20 @@ public class ResourceService(IResourceRepository resourceRepository, ILogger<Res
         }
     }
 
-    public async Task<ResourceDto?> UpdateResourceAsync(ResourceDto resourceDto)
+    public async Task<ResourceDto?> UpdateResourceAsync(ResourceDto resource)
     {
         try
         {
             var resourceEntity = new Resource
             {
-                Id = resourceDto.Id,
-                Name = resourceDto.Name,
+                Id = resource.Id,
+                Name = resource.Name,
                 Localization = new Localization
                 {
-                    Latitude = resourceDto.Localization.Latitude,
-                    Longitude = resourceDto.Localization.Longitude
+                    Latitude = resource.Localization.Latitude,
+                    Longitude = resource.Localization.Longitude
                 },
-                PhoneNumber = resourceDto.PhoneNumber
+                PhoneNumber = resource.PhoneNumber
             };
             var result = await resourceRepository.UpdateResourceAsync(resourceEntity);
             await resourceRepository.SaveChangesAsync();
@@ -82,7 +82,7 @@ public class ResourceService(IResourceRepository resourceRepository, ILogger<Res
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "ResourceService.UpdateResourceAsync failed for {@Resource}", resourceDto);
+            logger.LogError(ex, "ResourceService.UpdateResourceAsync failed for {@Resource}", resource);
             return null;
         }
     }
