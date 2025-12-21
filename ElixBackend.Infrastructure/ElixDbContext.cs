@@ -16,15 +16,19 @@ public class ElixDbContext(DbContextOptions<ElixDbContext> options) : DbContext(
     public DbSet<UserAnswer> UserAnswers { get; set; }
 
     public DbSet<UserPoint> UserPoints { get; set; }
+    public DbSet<Resource> Resources { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
+
+        modelBuilder.Entity<Resource>()
+            .OwnsOne(r => r.Localization);
+
         modelBuilder.Entity<User>()
             .Property(u => u.Gender)
             .HasConversion<string>();
-        
+
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique();

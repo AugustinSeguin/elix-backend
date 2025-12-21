@@ -93,11 +93,13 @@ try
     builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
     builder.Services.AddScoped<IUserAnswerRepository, UserAnswerRepository>();
     builder.Services.AddScoped<IUserPointRepository, UserPointRepository>();
+    builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
 
     // scoped service
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<ICategoryService, CategoryService>();
+    builder.Services.AddScoped<IResourceService, ResourceService>();
     builder.Services.AddScoped<IQuestionService, QuestionService>();
     builder.Services.AddScoped<IAnswerService, AnswerService>();
     builder.Services.AddScoped<IArticleService, ArticleService>();

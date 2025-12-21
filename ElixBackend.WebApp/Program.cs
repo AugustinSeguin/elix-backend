@@ -4,7 +4,7 @@ using ElixBackend.Infrastructure.IRepository;
 using ElixBackend.Infrastructure.Repository;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.Service;
-using ElixBackend.WebApp.Services; 
+using ElixBackend.WebApp.Services;
 using Serilog;
 using Serilog.Events;
 using Microsoft.Extensions.FileProviders;
@@ -64,6 +64,8 @@ try
     builder.Services.AddScoped<IAnswerService, AnswerService>();
     builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
     builder.Services.AddScoped<IArticleService, ArticleService>();
+    builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
+    builder.Services.AddScoped<IResourceService, ResourceService>();
 
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddTransient<TokenPropagationHandler>();

@@ -43,3 +43,6 @@ Thumbs.db
 # Static files
 **/wwwroot/
 ElixBackend.API/temp/ 
+
+prompt.md
+prompt_history.md
