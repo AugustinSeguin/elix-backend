@@ -1,0 +1,56 @@
+@model ElixBackend.Business.DTO.ResourceDto
+
+@{
+    ViewData["Title"] = "Modifier la ressource";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h2>Modifier la ressource</h2>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger mt-3 text-center">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label">Nom</label>
+                <input asp-for="Name" name="Name" class="form-control" value="@Model?.Name" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label">Numéro de téléphone</label>
+                <input asp-for="PhoneNumber" name="PhoneNumber" class="form-control" value="@Model?.PhoneNumber" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Localization.Latitude" class="form-label">Latitude</label>
+                    <input asp-for="Localization.Latitude" name="Localization.Latitude" class="form-control" type="number" step="any" value="@Model?.Localization?.Latitude" />
+                    <span asp-validation-for="Localization.Latitude" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Localization.Longitude" class="form-label">Longitude</label>
+                    <input asp-for="Localization.Longitude" name="Localization.Longitude" class="form-control" type="number" step="any" value="@Model?.Localization?.Longitude" />
+                    <span asp-validation-for="Localization.Longitude" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="/Resource/Index" class="btn btn-secondary">Annuler</a>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>

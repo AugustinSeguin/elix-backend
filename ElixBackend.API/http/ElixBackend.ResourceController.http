@@ -1,0 +1,63 @@
+@ElixBackend_HostAddress = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0Iiwicm9sZSI6ImFkbWluIiwianRpIjoiZmQ0MTdkY2MtY2FkNi00MGZkLWE4YzMtOTZlZTczZWI3YmZlIiwibmJmIjoxNzY2MzE4MTEyLCJleHAiOjE3NjYzMjUzMTIsImlhdCI6MTc2NjMxODExMn0.G0OUTWA1v-XSedcx1-NoW1ToCq63M8BiU0vxSEdCNvQ
+
+### GET ALL RESOURCES
+GET {{ElixBackend_HostAddress}}/api/Resource
+Authorization: Bearer {{token}}
+
+###
+
+### GET RESOURCE BY ID
+GET {{ElixBackend_HostAddress}}/api/Resource/1
+Authorization: Bearer {{token}}
+
+###
+
+### CREATE RESOURCE (auth)
+POST {{ElixBackend_HostAddress}}/api/Resource
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Planning Familial Grenoble",
+  "localization": {
+      "latitude": 45.1885,
+      "longitude": 5.7245
+  },
+  "phoneNumber": "+33 4 76 42 26 23"
+}
+
+###
+
+### UPDATE RESOURCE (auth)
+PUT {{ElixBackend_HostAddress}}/api/Resource/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "id": 1,
+  "name": "Planning Familial Grenoble Modifié",
+  "localization": {
+      "latitude": 45.1900,
+      "longitude": 5.7300
+  },
+  "phoneNumber": "+33 4 76 00 00 00"
+}
+
+###
+
+### DELETE RESOURCE (auth)
+DELETE {{ElixBackend_HostAddress}}/api/Resource/1
+Authorization: Bearer {{token}}
+
+###
+
+### SEARCH BY KEYWORD
+GET {{ElixBackend_HostAddress}}/api/Resource/search/keyword?keyword=Planning
+Authorization: Bearer {{token}}
+
+###
+
+### SEARCH BY LOCALIZATION
+GET {{ElixBackend_HostAddress}}/api/Resource/search/localization?latitude=45.1885&longitude=5.7245
+Authorization: Bearer {{token}}
