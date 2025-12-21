@@ -4,6 +4,7 @@ using ElixBackend.WebApp.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Configuration;
 using Moq;
 using NUnit.Framework;
 
@@ -13,13 +14,15 @@ namespace ElixBackend.Tests.WebApp.Controllers;
 public class CategoryControllerTest
 {
     private Mock<ICategoryService> _categoryServiceMock;
+    private Mock<IConfiguration> _configurationMock;
     private CategoryController _controller;
 
     [SetUp]
     public void SetUp()
     {
         _categoryServiceMock = new Mock<ICategoryService>();
-        _controller = new CategoryController(_categoryServiceMock.Object);
+        _configurationMock = new Mock<IConfiguration>();
+        _controller = new CategoryController(_categoryServiceMock.Object, _configurationMock.Object);
         
         // Setup TempData and HttpContext
         var httpContext = new DefaultHttpContext();
@@ -109,7 +112,7 @@ public class CategoryControllerTest
             .ReturnsAsync(new CategoryDto { Id = 1, Title = "New Category", Description = "New Description" });
 
         // Act
-        var result = await _controller.Create(categoryDto) as RedirectToActionResult;
+        var result = await _controller.Create(categoryDto, null) as RedirectToActionResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -125,7 +128,7 @@ public class CategoryControllerTest
         _controller.ModelState.AddModelError("Title", "Le titre est requis");
 
         // Act
-        var result = await _controller.Create(categoryDto) as ViewResult;
+        var result = await _controller.Create(categoryDto, null) as ViewResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -143,7 +146,7 @@ public class CategoryControllerTest
         _categoryServiceMock.Setup(s => s.AddCategoryAsync(It.IsAny<CategoryDto>())).ThrowsAsync(new Exception("Database error"));
 
         // Act
-        var result = await _controller.Create(categoryDto) as ViewResult;
+        var result = await _controller.Create(categoryDto, null) as ViewResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -201,11 +204,12 @@ public class CategoryControllerTest
     {
         // Arrange
         var categoryDto = new CategoryDto { Id = 5, Title = "Updated Category", Description = "Updated Description" };
+        _categoryServiceMock.Setup(s => s.GetCategoryByIdAsync(5)).ReturnsAsync(categoryDto);
         _categoryServiceMock.Setup(s => s.UpdateCategoryAsync(It.IsAny<CategoryDto>()))
             .ReturnsAsync(new CategoryDto { Id = 5, Title = "Updated Category", Description = "Updated Description" });
 
         // Act
-        var result = await _controller.Edit(categoryDto) as RedirectToActionResult;
+        var result = await _controller.Edit(categoryDto, null) as RedirectToActionResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -221,7 +225,7 @@ public class CategoryControllerTest
         _controller.ModelState.AddModelError("Title", "Le titre est requis");
 
         // Act
-        var result = await _controller.Edit(categoryDto) as ViewResult;
+        var result = await _controller.Edit(categoryDto, null) as ViewResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -236,10 +240,11 @@ public class CategoryControllerTest
     {
         // Arrange
         var categoryDto = new CategoryDto { Id = 5, Title = "Category", Description = "Description" };
+        _categoryServiceMock.Setup(s => s.GetCategoryByIdAsync(5)).ReturnsAsync(categoryDto);
         _categoryServiceMock.Setup(s => s.UpdateCategoryAsync(It.IsAny<CategoryDto>())).ThrowsAsync(new Exception("Update failed"));
 
         // Act
-        var result = await _controller.Edit(categoryDto) as ViewResult;
+        var result = await _controller.Edit(categoryDto, null) as ViewResult;
 
         // Assert
         Assert.That(result, Is.Not.Null);

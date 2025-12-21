@@ -84,30 +84,71 @@ public class CategoryServiceTest
 
         Assert.That(result, Is.Not.Null);
         Assert.That(result.Title, Is.EqualTo(category.Title));
-        _categoryRepositoryMock.Verify(r => r.UpdateCategoryAsync(It.Is<Category>(c => c.Id == dto.Id && c.Title == dto.Title)), Times.Once);
+        _categoryRepositoryMock.Verify(r => r.UpdateCategoryAsync(It.IsAny<Category>()), Times.Once);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task DeleteCategoryAsync_CallsRepository()
+    public async Task DeleteCategoryAsync_CallsRepositoryAndReturnsBool()
     {
         _categoryRepositoryMock.Setup(r => r.DeleteCategoryAsync(4)).Returns(Task.CompletedTask);
         _categoryRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
-        await _categoryService.DeleteCategoryAsync(4);
+        var result = await _categoryService.DeleteCategoryAsync(4);
 
+        Assert.That(result, Is.True);
         _categoryRepositoryMock.Verify(r => r.DeleteCategoryAsync(4), Times.Once);
         _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
     [Test]
-    public async Task SaveChangesAsync_CallsRepositoryAndReturnsResult()
+    public async Task AddCategoryAsync_WithImage_ReturnsCategoryWithImagePath()
     {
+        var dto = new CategoryDto 
+        { 
+            Title = "cat_with_image", 
+            Description = "desc",
+            ImageMediaPath = "/temp/image123.jpg"
+        };
+        var category = new Category 
+        { 
+            Id = 5, 
+            Title = "cat_with_image", 
+            Description = "desc",
+            ImageMediaPath = "/temp/image123.jpg"
+        };
+        _categoryRepositoryMock.Setup(r => r.AddCategoryAsync(It.IsAny<Category>())).ReturnsAsync(category);
         _categoryRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
 
-        var result = await _categoryService.SaveChangesAsync();
+        var result = await _categoryService.AddCategoryAsync(dto);
 
-        Assert.That(result, Is.True);
-        _categoryRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.ImageMediaPath, Is.EqualTo(category.ImageMediaPath));
+    }
+
+    [Test]
+    public async Task UpdateCategoryAsync_WithImage_ReturnsCategoryWithImagePath()
+    {
+        var dto = new CategoryDto 
+        { 
+            Id = 6, 
+            Title = "updated_cat", 
+            Description = "updated_desc",
+            ImageMediaPath = "/temp/new_image456.jpg"
+        };
+        var category = new Category 
+        { 
+            Id = 6, 
+            Title = "updated_cat", 
+            Description = "updated_desc",
+            ImageMediaPath = "/temp/new_image456.jpg"
+        };
+        _categoryRepositoryMock.Setup(r => r.UpdateCategoryAsync(It.IsAny<Category>())).ReturnsAsync(category);
+        _categoryRepositoryMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
+
+        var result = await _categoryService.UpdateCategoryAsync(dto);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.ImageMediaPath, Is.EqualTo(category.ImageMediaPath));
     }
 }

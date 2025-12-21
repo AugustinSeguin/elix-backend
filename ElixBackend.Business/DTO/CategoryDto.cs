@@ -9,6 +9,7 @@ public class CategoryDto
     [Required(ErrorMessage = "Le titre est requis.")]
     public required string Title { get; set; }
     public string? Description { get; set; }
+    public string? ImageMediaPath { get; set; }
 
     public static CategoryDto CategoryToCategoryDto(Category category)
     {
@@ -16,7 +17,8 @@ public class CategoryDto
         {
             Id = category.Id,
             Title = category.Title,
-            Description = category.Description
+            Description = category.Description,
+            ImageMediaPath = category.ImageMediaPath
         };
     }
 }

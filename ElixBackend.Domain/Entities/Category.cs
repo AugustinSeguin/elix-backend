@@ -7,4 +7,6 @@ public class Category
     public required string Title { get; set; }
     
     public string? Description { get; set; }
+    
+    public string? ImageMediaPath { get; set; }
 }

@@ -26,6 +26,13 @@ public class CategoryRepository(ElixDbContext context) : ICategoryRepository
 
     public Task<Category> UpdateCategoryAsync(Category category)
     {
+        var local = context.Categories.Local.FirstOrDefault(c => c.Id == category.Id);
+        if (local != null)
+        {
+            context.Entry(local).CurrentValues.SetValues(category);
+            return Task.FromResult(local);
+        }
+
         var entry = context.Categories.Update(category);
         return Task.FromResult(entry.Entity);
     }

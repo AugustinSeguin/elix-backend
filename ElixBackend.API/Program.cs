@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Events;
+using Microsoft.Extensions.FileProviders;
 
 // Build configuration explicitly to load appsettings.json and environment specific files
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
@@ -46,7 +47,8 @@ try
     builder.Configuration.AddConfiguration(configuration);
 
     // Use Serilog as the logging provider
-    builder.Host.UseSerilog();
+    builder.Logging.ClearProviders();
+    builder.Host.UseSerilog(Log.Logger);
 
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen();
@@ -112,6 +114,25 @@ try
         app.UseSwaggerUI();
     }
 
+    // Serve uploads folder as /uploads
+    try
+    {
+        var uploadsPath = builder.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
+        var uploadsFolder = Path.IsPathRooted(uploadsPath) ? uploadsPath : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
+
+        if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            FileProvider = new PhysicalFileProvider(uploadsFolder),
+            RequestPath = "/uploads"
+        });
+    }
+    catch (Exception ex)
+    {
+        Log.Warning(ex, "Could not configure static file serving for uploads folder");
+    }
+
     app.UseAuthentication();
     app.UseAuthorization();
     app.UseHttpsRedirection();
@@ -129,5 +150,5 @@ catch (Exception ex)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

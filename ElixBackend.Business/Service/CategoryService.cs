@@ -15,7 +15,8 @@ public class CategoryService(ICategoryRepository categoryRepository, ILogger<Cat
             var categoryEntity = new Category
             {
                 Title = category.Title,
-                Description = category.Description
+                Description = category.Description,
+                ImageMediaPath = category.ImageMediaPath
             };
             var result = await categoryRepository.AddCategoryAsync(categoryEntity);
             await categoryRepository.SaveChangesAsync();
@@ -64,7 +65,8 @@ public class CategoryService(ICategoryRepository categoryRepository, ILogger<Cat
             {
                 Id = category.Id,
                 Title = category.Title,
-                Description = category.Description
+                Description = category.Description,
+                ImageMediaPath = category.ImageMediaPath
             };
             var result = await categoryRepository.UpdateCategoryAsync(categoryEntity);
             await categoryRepository.SaveChangesAsync();

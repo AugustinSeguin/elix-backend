@@ -7,6 +7,7 @@ using ElixBackend.Business.Service;
 using ElixBackend.WebApp.Services; 
 using Serilog;
 using Serilog.Events;
+using Microsoft.Extensions.FileProviders;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
 var configuration = new ConfigurationBuilder()
@@ -100,10 +101,11 @@ try
             Directory.CreateDirectory(physicalPath);
         }
 
+        // Serve the same uploads folder under /uploads for the WebApp
         app.UseStaticFiles(new StaticFileOptions
         {
-            FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(physicalPath),
-            RequestPath = uploadsPath
+            FileProvider = new PhysicalFileProvider(physicalPath),
+            RequestPath = "/uploads"
         });
     }
 

@@ -12,15 +12,15 @@ public static class MediaHelper
     {
         if (mediaFile == null || mediaFile.Length == 0)
         {
+            // If no new file provided, return existing stored value (which may be filename or null)
             return existingMediaPath;
         }
 
         var uploadsPath = configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
-        
         var uploadsFolder = Path.IsPathRooted(uploadsPath) 
             ? uploadsPath 
             : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
-            
+
         if (!Directory.Exists(uploadsFolder))
         {
             Directory.CreateDirectory(uploadsFolder);
@@ -34,19 +34,25 @@ public static class MediaHelper
             await mediaFile.CopyToAsync(stream);
         }
 
+        // Delete old file if exists. existingMediaPath may be a filename or an absolute path.
         if (!string.IsNullOrEmpty(existingMediaPath))
         {
-            var oldFileName = Path.GetFileName(existingMediaPath);
-            var oldFilePath = Path.IsPathRooted(uploadsPath)
-                ? Path.Combine(uploadsPath, oldFileName)
-                : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath, oldFileName);
-                
-            if (File.Exists(oldFilePath))
+            try
             {
-                File.Delete(oldFilePath);
+                var oldFileName = Path.GetFileName(existingMediaPath);
+                var oldFilePath = Path.Combine(uploadsFolder, oldFileName);
+                if (File.Exists(oldFilePath))
+                {
+                    File.Delete(oldFilePath);
+                }
+            }
+            catch
+            {
+                // swallow any deletion errors; not critical
             }
         }
 
-        return filePath;
+        // Return only the file name so controllers/views can build a public URL like /uploads/{fileName}
+        return uniqueFileName;
     }
 }

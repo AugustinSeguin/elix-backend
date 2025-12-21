@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.DTO;
-using Microsoft.AspNetCore.Razor.TagHelpers;
+using ElixBackend.Business.Helpers;
 
 namespace ElixBackend.WebApp.Controllers;
 
 [Authorize]
 [Route("[controller]")]
-public class CategoryController(ICategoryService categoryService) : Controller
+public class CategoryController(ICategoryService categoryService, IConfiguration configuration) : Controller
 {
     [HttpGet("[action]")]
     public async Task<IActionResult> Index()
@@ -37,7 +37,7 @@ public class CategoryController(ICategoryService categoryService) : Controller
     // POST: /Category/Create
     [HttpPost("Create")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CategoryDto categoryDto)
+    public async Task<IActionResult> Create(CategoryDto categoryDto, IFormFile? imageFile)
     {
         if (!ModelState.IsValid)
         {
@@ -46,6 +46,11 @@ public class CategoryController(ICategoryService categoryService) : Controller
 
         try
         {
+            if (imageFile != null)
+            {
+                categoryDto.ImageMediaPath = await MediaHelper.HandleMediaUploadAsync(imageFile, configuration);
+            }
+
             await categoryService.AddCategoryAsync(categoryDto);
             return RedirectToAction("Index");
         }
@@ -58,7 +63,7 @@ public class CategoryController(ICategoryService categoryService) : Controller
 
     [HttpPost("Edit")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(CategoryDto categoryDto)
+    public async Task<IActionResult> Edit(CategoryDto categoryDto, IFormFile? imageFile)
     {
         if (!ModelState.IsValid)
         {
@@ -67,6 +72,8 @@ public class CategoryController(ICategoryService categoryService) : Controller
 
         try
         {
+            var existingCategory = await categoryService.GetCategoryByIdAsync(categoryDto.Id);
+            categoryDto.ImageMediaPath = await MediaHelper.HandleMediaUploadAsync(imageFile, configuration, existingCategory.ImageMediaPath);
             await categoryService.UpdateCategoryAsync(categoryDto);
             return RedirectToAction("Index");
         }

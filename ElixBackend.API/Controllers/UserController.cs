@@ -127,7 +127,7 @@ namespace ElixBackend.API.Controllers
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
                 var fileName = Path.GetFileName(user.PictureMediaPath);
-                user.PictureMediaPath = $"{baseUrl}/user/{id}/{fileName}";
+                user.PictureMediaPath = $"{baseUrl}/uploads/{fileName}";
             }
 
             return Ok(user);
@@ -217,9 +217,20 @@ namespace ElixBackend.API.Controllers
             if (pictureFile is not { Length: > 0 })
                 return BadRequest("Aucun fichier fourni.");
 
-            existingUser.PictureMediaPath = await MediaHelper.HandleMediaUploadAsync(pictureFile, configuration);
+            var savedPath = await MediaHelper.HandleMediaUploadAsync(pictureFile, configuration, existingUser.PictureMediaPath);
+            existingUser.PictureMediaPath = savedPath;
 
             var user = await userService.UpdateUserAsync(existingUser);
+
+            // return url
+            if (!string.IsNullOrWhiteSpace(user?.PictureMediaPath))
+            {
+                var request = HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
+                var fileName = Path.GetFileName(user.PictureMediaPath);
+                user.PictureMediaPath = $"{baseUrl}/uploads/{fileName}";
+            }
+
             return Ok(user);
         }
 
@@ -274,7 +285,7 @@ namespace ElixBackend.API.Controllers
                 var request = HttpContext.Request;
                 var baseUrl = $"{request.Scheme}://{request.Host}";
                 var fileName = Path.GetFileName(user.PictureMediaPath);
-                user.PictureMediaPath = $"{baseUrl}/user/{userId}/{fileName}";
+                user.PictureMediaPath = $"{baseUrl}/uploads/{fileName}";
             }
 
             return Ok(user);
