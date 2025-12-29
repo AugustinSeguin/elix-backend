@@ -104,4 +104,47 @@ public class UserPointServiceTest
         _repoMock.Verify(r => r.DeleteUserPointAsync(9), Times.Once);
         _repoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
+
+    [Test]
+    public async Task GetUserPointsByCategory_ReturnsDto()
+    {
+        var entity = new UserPoint { Id = 5, UserId = 3, CategoryId = 4, Points = 7 };
+        _repoMock.Setup(r => r.GetUserPointsByCategory(4, 3)).ReturnsAsync(entity);
+
+        var result = await _service.GetUserPointsByCategory(4, 3);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Id, Is.EqualTo(5));
+        Assert.That(result.UserId, Is.EqualTo(3));
+        Assert.That(result.CategoryId, Is.EqualTo(4));
+        Assert.That(result.Points, Is.EqualTo(7));
+    }
+
+    [Test]
+    public async Task GetUserPointsByCategory_ReturnsNull_WhenNotFound()
+    {
+        _repoMock.Setup(r => r.GetUserPointsByCategory(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync((UserPoint?)null);
+
+        var result = await _service.GetUserPointsByCategory(99, 99);
+
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetUserPoints_ReturnsDtos()
+    {
+        var list = new List<UserPoint>
+        {
+            new UserPoint { Id = 1, UserId = 1, CategoryId = 2, Points = 10 },
+            new UserPoint { Id = 2, UserId = 1, CategoryId = 3, Points = 20 }
+        };
+        _repoMock.Setup(r => r.GetUserPoints(1)).ReturnsAsync(list);
+
+        var result = await _service.GetUserPoints(1);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.Any(x => x.CategoryId == 2 && x.Points == 10), Is.True);
+        Assert.That(result.Any(x => x.CategoryId == 3 && x.Points == 20), Is.True);
+    }
 }

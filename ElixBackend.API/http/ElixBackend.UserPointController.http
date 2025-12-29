@@ -1,0 +1,14 @@
+@ElixBackend_HostAddress = http://localhost:5059
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwicm9sZSI6ImFkbWluIiwianRpIjoiNDM1YzA2NGUtZTUyMi00MTk1LTlhMTktMDk0MDg5OWRhYWYxIiwibmJmIjoxNzY0Njg3ODg3LCJleHAiOjE3NjQ2OTUwODcsImlhdCI6MTc2NDY4Nzg4N30.aSOK30jTvbKGdyZ3eiVdhdX82U8LeFh2-aqVp4H0It0
+
+### GET User Points By Category
+GET {{ElixBackend_HostAddress}}/api/UserPoint/user/1/category/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+### GET User Points Total
+GET {{ElixBackend_HostAddress}}/api/UserPoint/user/1
+Authorization: Bearer {{token}}
+Accept: application/json

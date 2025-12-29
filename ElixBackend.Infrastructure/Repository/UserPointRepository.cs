@@ -28,6 +28,21 @@ public class UserPointRepository(ElixDbContext context) : IUserPointRepository
         return Task.FromResult(entry.Entity);
     }
 
+    public async Task<UserPoint?> GetUserPointsByCategory(int categoryId, int userId)
+    {
+        return await context.UserPoints
+            .AsNoTracking()
+            .FirstOrDefaultAsync(up => up.CategoryId == categoryId && up.UserId == userId);
+    }
+
+    public async Task<IEnumerable<UserPoint>> GetUserPoints(int userId)
+    {
+        return await context.UserPoints
+            .AsNoTracking()
+            .Where(up => up.UserId == userId)
+            .ToListAsync();
+    }
+
     public async Task DeleteUserPointAsync(int id)
     {
         var ua = await context.UserPoints.FindAsync(id);

@@ -40,6 +40,14 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
     {
         try
         {
+            var existing = await userPointRepository.GetUserPointsByCategory(up.CategoryId, up.UserId);
+            if (existing != null)
+            {
+                up.Id = existing.Id;
+                up.Points += existing.Points;
+                return await UpdateUserPointAsync(up);
+            }
+
             var entity = new UserPoint
             {
                 UserId = up.UserId,
@@ -77,6 +85,34 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
         catch (Exception ex)
         {
             logger.LogError(ex, "UserPointService.UpdateUserPointAsync failed for {@UserPointDto}", up);
+            return null;
+        }
+    }
+
+    public async Task<UserPointDto?> GetUserPointsByCategory(int categoryId, int userId)
+    {
+        try
+        {
+            var up = await userPointRepository.GetUserPointsByCategory(categoryId, userId);
+            return up is null ? null : ToDto(up);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.GetUserPointsByCategory failed for categoryId {CategoryId} and userId {UserId}", categoryId, userId);
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<UserPointDto>?> GetUserPoints(int userId)
+    {
+        try
+        {
+            var list = await userPointRepository.GetUserPoints(userId);
+            return list.Select(ToDto);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.GetUserPoints failed for userId {UserId}", userId);
             return null;
         }
     }
