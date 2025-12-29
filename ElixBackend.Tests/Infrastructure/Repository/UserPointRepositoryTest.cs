@@ -106,4 +106,45 @@ public class UserPointRepositoryTest
         var found = await _repository.GetUserPointByIdAsync(up.Id);
         Assert.That(found, Is.Null);
     }
+
+    [Test]
+    public async Task GetUserPointsByCategory_ReturnsEntity()
+    {
+        var up = new UserPoint { UserId = 1, CategoryId = 2, Points = 10 };
+        await _repository.AddUserPointAsync(up);
+        await _repository.SaveChangesAsync();
+
+        var result = await _repository.GetUserPointsByCategory(2, 1);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.UserId, Is.EqualTo(1));
+        Assert.That(result.CategoryId, Is.EqualTo(2));
+        Assert.That(result.Points, Is.EqualTo(10));
+    }
+
+    [Test]
+    public async Task GetUserPointsByCategory_ReturnsNull_WhenNotFound()
+    {
+        var result = await _repository.GetUserPointsByCategory(99, 99);
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public async Task GetUserPoints_ReturnsEntities()
+    {
+        var up1 = new UserPoint { UserId = 1, CategoryId = 2, Points = 10 };
+        var up2 = new UserPoint { UserId = 1, CategoryId = 3, Points = 20 };
+        var up3 = new UserPoint { UserId = 2, CategoryId = 2, Points = 30 };
+        await _repository.AddUserPointAsync(up1);
+        await _repository.AddUserPointAsync(up2);
+        await _repository.AddUserPointAsync(up3);
+        await _repository.SaveChangesAsync();
+
+        var result = await _repository.GetUserPoints(1);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.Any(x => x.CategoryId == 2 && x.Points == 10), Is.True);
+        Assert.That(result.Any(x => x.CategoryId == 3 && x.Points == 20), Is.True);
+    }
 }

@@ -12,6 +12,10 @@ public interface IUserPointRepository
 
     Task<UserPoint> UpdateUserPointAsync(UserPoint userPoint);
 
+    Task<UserPoint?> GetUserPointsByCategory(int categoryId, int userId);
+
+    Task<IEnumerable<UserPoint>> GetUserPoints(int userId);
+
     Task DeleteUserPointAsync(int id);
 
     Task<bool> SaveChangesAsync();
