@@ -71,6 +71,24 @@ public class ArticleRepositoryTest
     }
 
     [Test]
+    public async Task GetArticlesByCategoryAsync_ReturnsArticlesForCategory()
+    {
+        var articles = new List<Article>
+        {
+            new Article { Title = "Cat1-A", CategoryId = 1 },
+            new Article { Title = "Cat1-B", CategoryId = 1 },
+            new Article { Title = "Cat2-A", CategoryId = 2 }
+        };
+        _context.Articles.AddRange(articles);
+        await _context.SaveChangesAsync();
+
+        var result = await _repository.GetArticlesByCategoryAsync(1);
+
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.All(a => a.CategoryId == 1), Is.True);
+    }
+
+    [Test]
     public async Task UpdateArticleAsync_UpdatesArticle()
     {
         var article = new Article { Title = "Old", Subtitle = "old" };

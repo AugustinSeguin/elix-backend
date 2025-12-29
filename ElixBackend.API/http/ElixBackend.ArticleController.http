@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIxIiwianRpIjoiZWY1NzBjODYtNjFhYi00NDg0LTg1ODktNmIzYjM2ODExZDZkIiwibmJmIjoxNzYyNzgzMjE2LCJleHAiOjE3NjI3OTA0MTYsImlhdCI6MTc2Mjc4MzIxNn0.nXqJqmvJ1Mp3xxhMBeH6_6PVynC8O4AxdUm2v0mnB-s
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0Iiwicm9sZSI6ImFkbWluIiwianRpIjoiZDc3NDk0NzctMGIwNy00MGVlLTg0ZTgtMjg0YjUzODYzYzZjIiwibmJmIjoxNzY3MDEyNTc5LCJleHAiOjE3NjcwMTk3NzksImlhdCI6MTc2NzAxMjU3OX0.VYDryvqYz3XH0xHVsbPnD-l-RvEgzzm8-zSoZEdyAxk
 
 ### ArticleController - Obtenir tous les articles
 GET {{baseUrl}}/api/Article
@@ -9,6 +9,12 @@ Accept: application/json
 
 ### ArticleController - Obtenir un article par id (ex: 1)
 GET {{baseUrl}}/api/Article/1
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+### ArticleController - Obtenir tous les articles d'une catégorie (ex: 1)
+GET {{baseUrl}}/api/Article/category/1
 Authorization: Bearer {{token}}
 Accept: application/json
 
@@ -23,7 +29,8 @@ Content-Type: application/json
   "subtitle": "Sous-titre optionnel",
   "content": "Contenu principal de l'article...",
   "mediaPath": "/media/articles/img1.jpg",
-  "footer": "Pied de page optionnel"
+  "footer": "Pied de page optionnel",
+  "categoryId": 1
 }
 
 

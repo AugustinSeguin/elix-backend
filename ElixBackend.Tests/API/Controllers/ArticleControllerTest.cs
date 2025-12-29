@@ -3,6 +3,7 @@ using Moq;
 using ElixBackend.API.Controllers;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.DTO;
+using Microsoft.Extensions.Configuration;
 
 namespace ElixBackend.Tests.API.Controllers;
 
@@ -10,13 +11,15 @@ namespace ElixBackend.Tests.API.Controllers;
 public class ArticleControllerTest
 {
     private Mock<IArticleService> _articleServiceMock;
+    private Mock<IConfiguration> _configurationMock;
     private ArticleController _controller;
 
     [SetUp]
     public void SetUp()
     {
         _articleServiceMock = new Mock<IArticleService>();
-        _controller = new ArticleController(_articleServiceMock.Object);
+        _configurationMock = new Mock<IConfiguration>();
+        _controller = new ArticleController(_articleServiceMock.Object, _configurationMock.Object);
     }
 
     [Test]
@@ -57,6 +60,36 @@ public class ArticleControllerTest
         _articleServiceMock.Setup(s => s.GetArticleByIdAsync(99)).ReturnsAsync((ArticleDto?)null);
 
         var result = await _controller.GetArticleByIdAsync(99);
+
+        Assert.That(result, Is.TypeOf<NotFoundResult>());
+    }
+
+    [Test]
+    public async Task GetArticlesByCategoryAsync_ReturnsOkWithArticles()
+    {
+        var articles = new List<ArticleDto>
+        {
+            new ArticleDto { Id = 1, Title = "A1", CategoryId = 5 },
+            new ArticleDto { Id = 2, Title = "A2", CategoryId = 5 }
+        };
+        _articleServiceMock.Setup(s => s.GetArticlesByCategoryAsync(5)).ReturnsAsync(articles);
+
+        var result = await _controller.GetArticlesByCategoryAsync(5);
+
+        Assert.That(result, Is.TypeOf<OkObjectResult>());
+        var ok = (OkObjectResult)result;
+        var value = ok.Value as IEnumerable<ArticleDto>;
+        Assert.That(value, Is.Not.Null);
+        Assert.That(value!.Count(), Is.EqualTo(2));
+        Assert.That(value.All(a => a.CategoryId == 5), Is.True);
+    }
+
+    [Test]
+    public async Task GetArticlesByCategoryAsync_ReturnsNotFoundWhenNull()
+    {
+        _articleServiceMock.Setup(s => s.GetArticlesByCategoryAsync(99)).ReturnsAsync((IEnumerable<ArticleDto>?)null);
+
+        var result = await _controller.GetArticlesByCategoryAsync(99);
 
         Assert.That(result, Is.TypeOf<NotFoundResult>());
     }

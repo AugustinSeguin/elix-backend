@@ -1,10 +1,12 @@
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ElixBackend.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class AnswerController(IAnswerService answerService) : ControllerBase
 {

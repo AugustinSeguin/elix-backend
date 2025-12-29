@@ -68,6 +68,24 @@ public class ArticleServiceTest
     }
 
     [Test]
+    public async Task GetArticlesByCategoryAsync_ReturnsDtos()
+    {
+        var articles = new List<Article>
+        {
+            new Article { Id = 1, Title = "Article1", CategoryId = 5 },
+            new Article { Id = 2, Title = "Article2", CategoryId = 5 }
+        };
+        _articleRepositoryMock.Setup(r => r.GetArticlesByCategoryAsync(5)).ReturnsAsync(articles);
+
+        var result = await _articleService.GetArticlesByCategoryAsync(5);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.All(d => d.Title.Contains("Article")), Is.True);
+        _articleRepositoryMock.Verify(r => r.GetArticlesByCategoryAsync(5), Times.Once);
+    }
+
+    [Test]
     public async Task UpdateArticleAsync_CallsRepositoryAndReturnsDto()
     {
         var dto = new ArticleDto { Id = 3, Title = "Up" };

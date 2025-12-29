@@ -10,6 +10,8 @@ public interface IArticleService
 
     Task<IEnumerable<ArticleDto>?> GetAllArticlesAsync();
 
+    Task<IEnumerable<ArticleDto>?> GetArticlesByCategoryAsync(int categoryId);
+
     Task<ArticleDto?> UpdateArticleAsync(ArticleDto articleDto);
 
     Task<bool?> DeleteArticleAsync(int id);

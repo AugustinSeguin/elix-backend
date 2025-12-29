@@ -51,6 +51,20 @@ public class ArticleService(IArticleRepository articleRepository, ILogger<Articl
         }
     }
 
+    public async Task<IEnumerable<ArticleDto>?> GetArticlesByCategoryAsync(int categoryId)
+    {
+        try
+        {
+            var articles = await articleRepository.GetArticlesByCategoryAsync(categoryId);
+            return articles.Select(ArticleDto.FromEntity);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "ArticleService.GetArticlesByCategoryAsync failed for categoryId {CategoryId}", categoryId);
+            return null;
+        }
+    }
+
     public async Task<ArticleDto?> UpdateArticleAsync(ArticleDto articleDto)
     {
         try

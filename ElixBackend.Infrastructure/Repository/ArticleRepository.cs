@@ -22,6 +22,13 @@ public class ArticleRepository(ElixDbContext context) : IArticleRepository
         return await context.Articles.ToListAsync();
     }
 
+    public async Task<IEnumerable<Article>> GetArticlesByCategoryAsync(int categoryId)
+    {
+        return await context.Articles
+            .Where(a => a.CategoryId == categoryId)
+            .ToListAsync();
+    }
+
     public Task<Article> UpdateArticleAsync(Article article)
     {
         var entry = context.Articles.Update(article);
