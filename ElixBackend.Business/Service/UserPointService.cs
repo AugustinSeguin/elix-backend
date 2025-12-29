@@ -40,6 +40,14 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
     {
         try
         {
+            var existing = await userPointRepository.GetUserPointsByCategory(up.CategoryId, up.UserId);
+            if (existing != null)
+            {
+                up.Id = existing.Id;
+                up.Points += existing.Points;
+                return await UpdateUserPointAsync(up);
+            }
+
             var entity = new UserPoint
             {
                 UserId = up.UserId,
