@@ -6,6 +6,7 @@ using ElixBackend.Business.IService;
 namespace ElixBackend.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class ResourceController(IResourceService resourceService) : ControllerBase
 {
@@ -30,7 +31,6 @@ public class ResourceController(IResourceService resourceService) : ControllerBa
     }
 
     [HttpPost]
-    [Authorize]
     public async Task<ActionResult<ResourceDto>> Create(ResourceDto resourceDto)
     {
         if (!ModelState.IsValid)

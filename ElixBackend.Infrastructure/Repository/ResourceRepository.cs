@@ -1,6 +1,8 @@
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Text;
 
 namespace ElixBackend.Infrastructure.Repository;
 
@@ -53,9 +55,35 @@ public class ResourceRepository(ElixDbContext context) : IResourceRepository
 
     public async Task<IEnumerable<Resource>> SearchByKeywordAsync(string keyword)
     {
-        return await context.Resources
-            .Where(r => r.Name.Contains(keyword))
-            .ToListAsync();
+        // Récupération de toutes les ressources pour filtrage en mémoire
+        // Nécessaire car la normalisation (suppression accents/spéciaux) n'est pas traduite en SQL par EF Core par défaut
+        var allResources = await context.Resources.ToListAsync();
+        var normalizedKeyword = NormalizeString(keyword);
+
+        return allResources
+            .Where(r => NormalizeString(r.Name).Contains(normalizedKeyword))
+            .ToList();
+    }
+
+    private static string NormalizeString(string text)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return string.Empty;
+
+        var normalizedString = text.Normalize(NormalizationForm.FormD);
+        var stringBuilder = new StringBuilder();
+
+        foreach (var c in normalizedString)
+        {
+            var unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+            // On garde uniquement les lettres et chiffres (supprime espaces, tirets, ponctuations, accents)
+            if (unicodeCategory != UnicodeCategory.NonSpacingMark && char.IsLetterOrDigit(c))
+            {
+                stringBuilder.Append(c);
+            }
+        }
+
+        return stringBuilder.ToString().ToLowerInvariant();
     }
 
     public async Task<IEnumerable<Resource>> SearchByLocalizationAsync(double latitude, double longitude)
