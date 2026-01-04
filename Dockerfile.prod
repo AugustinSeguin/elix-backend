@@ -9,6 +9,8 @@ COPY ["ElixBackend.Business/ElixBackend.Business.csproj", "ElixBackend.Business/
 COPY ["ElixBackend.Domain/ElixBackend.Domain.csproj", "ElixBackend.Domain/"]
 COPY ["ElixBackend.Infrastructure/ElixBackend.Infrastructure.csproj", "ElixBackend.Infrastructure/"]
 COPY ["ElixBackend.WebApp/ElixBackend.WebApp.csproj", "ElixBackend.WebApp/"]
+COPY ["ElixBackend.Tests/ElixBackend.Tests.csproj", "ElixBackend.Tests/"]
+
 RUN dotnet restore "ElixBackend.sln"
 
 # Copie du code complet
