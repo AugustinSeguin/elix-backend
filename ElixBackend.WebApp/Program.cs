@@ -81,13 +81,16 @@ try
 
     var app = builder.Build();
 
-    if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")
+    if (!app.Environment.IsDevelopment() && app.Environment.EnvironmentName != "Local")
     {
-        app.UseExceptionHandler("/Error");
-        app.UseHsts();
+        app.UseExceptionHandler("/Home/Error");
+    }
+    else 
+    {
+        app.UseDeveloperExceptionPage();
+        app.UseHttpsRedirection();
     }
 
-    app.UseHttpsRedirection();
     app.UseStaticFiles();
 
     var uploadsPath = builder.Configuration["FileStorage:UploadsPath"] ?? string.Empty;
