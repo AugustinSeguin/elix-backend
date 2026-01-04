@@ -143,7 +143,12 @@ public static class Program
 
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseHttpsRedirection();
+
+            if (!app.Environment.IsProduction())
+            {
+                app.UseHttpsRedirection();
+            }
+            
             app.UseMiddleware<JwtJtiValidationMiddleware>();
             app.MapControllers();
 
