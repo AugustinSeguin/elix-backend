@@ -39,6 +39,31 @@ jobs:
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
+      - name: Build Docker Images
+        run: |
+          docker build --target api-final -t elix-api:latest -f Dockerfile.prod .
+          docker build --target webapp-final -t elix-webapp:latest -f Dockerfile.prod .
+
+      - name: Save Images
+        run: |
+          docker save elix-api:latest elix-webapp:latest | gzip > elix-apps.tar.gz
+
+      - name: Copy to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT }}
+          source: "elix-apps.tar.gz,compose.yml"
+          target: ${{ secrets.VPS_TARGET_PATH }}
+
+      - name: Remote Update
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          script: |
+            cd /var/www/elix-app
+            gunzip -c elix-apps.tar.gz | docker load
+            docker compose up -d
+            docker image prune -f

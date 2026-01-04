@@ -1,19 +1,37 @@
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
-WORKDIR /app
-EXPOSE 5000
-
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+# --- BASE SDK ---
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["./ElixBackend.API/ElixBackend.API.csproj", "ElixBackend.API/"]
-RUN dotnet restore "ElixBackend.API/ElixBackend.API.csproj"
+
+# Copie et restauration (optimisation cache)
+COPY ["ElixBackend.sln", "./"]
+COPY ["ElixBackend.API/ElixBackend.API.csproj", "ElixBackend.API/"]
+COPY ["ElixBackend.Business/ElixBackend.Business.csproj", "ElixBackend.Business/"]
+COPY ["ElixBackend.Domain/ElixBackend.Domain.csproj", "ElixBackend.Domain/"]
+COPY ["ElixBackend.Infrastructure/ElixBackend.Infrastructure.csproj", "ElixBackend.Infrastructure/"]
+COPY ["ElixBackend.WebApp/ElixBackend.WebApp.csproj", "ElixBackend.WebApp/"]
+RUN dotnet restore "ElixBackend.sln"
+
+# Copie du code complet
 COPY . .
-WORKDIR "/src/ElixBackend.API"
-RUN dotnet build -c Release -o /app/build
 
-FROM build AS publish
-RUN dotnet publish -c Release -o /app/publish
+# --- BUILD API ---
+FROM build AS publish-api
+RUN dotnet publish "ElixBackend.API/ElixBackend.API.csproj" -c Release -o /app/publish/api
 
-FROM base AS final
+# --- BUILD WEBAPP ---
+FROM build AS publish-webapp
+RUN dotnet publish "ElixBackend.WebApp/ElixBackend.WebApp.csproj" -c Release -o /app/publish/webapp
+
+# --- IMAGE FINALE API ---
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS api-final
 WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "watch", "run", "--no-launch-profile"]
+COPY --from=publish-api /app/publish/api .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "ElixBackend.API.dll"]
+
+# --- IMAGE FINALE WEBAPP ---
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS webapp-final
+WORKDIR /app
+COPY --from=publish-webapp /app/publish/webapp .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "ElixBackend.WebApp.dll"]
