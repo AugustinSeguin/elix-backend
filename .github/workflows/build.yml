@@ -14,7 +14,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          dotnet-version: 8.0.x
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
@@ -38,16 +38,13 @@ jobs:
           java-version: '17'
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        # --- CETTE LIGNE EST LA CLÉ ---
         continue-on-error: true 
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   deploy:
-    # On dépend de build et sonar_analysis
     needs: [build, sonar_analysis]
-    # On s'assure que build a réussi, mais on ignore l'état de sonar_analysis
     if: |
       always() && 
       needs.build.result == 'success' && 
@@ -55,6 +52,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # --- INJECTION DES SECRETS DANS LES DEUX FICHIERS ---
+      - name: Inject Secrets into appsettings
+        run: |
+          # Liste des fichiers à modifier
+          API_PATH="ElixBackend.API/appsettings.Production.json"
+          WEB_PATH="ElixBackend.WebApp/appsettings.Production.json"
+          
+          for FILE in "$API_PATH" "$WEB_PATH"
+          do
+            if [ -f "$FILE" ]; then
+              echo "Injecting secrets into $FILE"
+              # 1. Connection String
+              sed -i 's|"DefaultConnection": ".*"|"DefaultConnection": "${{ secrets.DB_CONNECTION_STRING }}"|g' "$FILE"
+              # 2. JWT Secret Key
+              sed -i 's|"SecretKey": ".*"|"SecretKey": "${{ secrets.JWT_SECRET_KEY }}"|g' "$FILE"
+              # 3. Uploads Path
+              sed -i 's|"UploadsPath": ".*"|"UploadsPath": "${{ secrets.UPLOADS_PATH }}"|g' "$FILE"
+            else
+              echo "Warning: $FILE not found, skipping."
+            fi
+          done
 
       - name: Build Docker Images
         run: |
@@ -83,7 +102,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /var/www/elix-app
+            cd ${{ secrets.VPS_TARGET_PATH }}
             if [ -f elix-apps.tar.gz ]; then
               gunzip -c elix-apps.tar.gz | docker load
               docker compose up -d
