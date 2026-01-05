@@ -18,7 +18,6 @@ public static class Program
 {
     private static async Task<int> Main(string[] args)
     {
-        // Build configuration explicitly to load appsettings.json and environment specific files
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
         var configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
@@ -27,7 +26,6 @@ public static class Program
             .AddEnvironmentVariables()
             .Build();
 
-        // Configure Serilog from configuration
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
             .Enrich.FromLogContext()
@@ -48,13 +46,26 @@ public static class Program
                 EnvironmentName = environment
             });
 
-            // Replace default configuration with our explicit configuration
             builder.Configuration.Sources.Clear();
             builder.Configuration.AddConfiguration(configuration);
 
-            // Use Serilog as the logging provider
             builder.Logging.ClearProviders();
             builder.Host.UseSerilog(Log.Logger);
+
+            // --- CONFIGURATION CORS ---
+            // On récupère l'URL du front depuis l'environnement (défini dans docker-compose)
+            var frontEndUrl = builder.Configuration["FRONTEND_URL"] ?? "https://app.elix.cleanascode.fr";
+            
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("WebAppPolicy", policy =>
+                {
+                    policy.WithOrigins(frontEndUrl)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
+            });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -63,12 +74,10 @@ public static class Program
             builder.Services.AddDbContext<ElixDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // configure jwt settings
             var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"];
             if (jwtSecretKey != null)
             {
                 var key = Encoding.ASCII.GetBytes(jwtSecretKey);
-
                 builder.Services.AddAuthentication(options =>
                     {
                         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -90,7 +99,7 @@ public static class Program
 
             builder.Services.AddAuthorization();
 
-            // scoped repository
+            // Repositories & Services
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<ITokenRepository, TokenRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -100,8 +109,6 @@ public static class Program
             builder.Services.AddScoped<IUserAnswerRepository, UserAnswerRepository>();
             builder.Services.AddScoped<IUserPointRepository, UserPointRepository>();
             builder.Services.AddScoped<IResourceRepository, ResourceRepository>();
-
-            // scoped service
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -115,7 +122,7 @@ public static class Program
 
             var app = builder.Build();
 
-            // --- AUTOMATIC MIGRATIONS ON STARTUP ---
+            // Automatic Migrations
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
@@ -123,7 +130,6 @@ public static class Program
                 {
                     var context = services.GetRequiredService<ElixDbContext>();
                     Log.Information("Checking for pending migrations...");
-                    // Migrate() s'occupe de créer la DB si elle n'existe pas et d'appliquer les migrations manquantes
                     await context.Database.MigrateAsync();
                     Log.Information("Database migrations applied successfully.");
                 }
@@ -133,20 +139,17 @@ public static class Program
                 }
             }
 
-            // Configure the HTTP request pipeline.
-            // Ajout de app.Environment.IsProduction() pour voir Swagger sur ton VPS
             if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local" || app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            // Serve uploads folder as /uploads
+            // Static Files
             try
             {
                 var uploadsPath = builder.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
                 var uploadsFolder = Path.IsPathRooted(uploadsPath) ? uploadsPath : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
-
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
                 app.UseStaticFiles(new StaticFileOptions
@@ -155,15 +158,17 @@ public static class Program
                     RequestPath = "/uploads"
                 });
             }
-            catch (Exception ex)
-            {
-                Log.Warning(ex, "Could not configure static file serving for uploads folder");
-            }
+            catch (Exception ex) { Log.Warning(ex, "Could not configure static file serving"); }
+
+            app.UseRouting();
+
+            // --- APPLICATION DU CORS ---
+            // Doit être placé APRES UseRouting et AVANT UseAuthentication/Authorization
+            app.UseCors("WebAppPolicy");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // On ne redirige vers HTTPS que si on n'est pas derrière le proxy Nginx du VPS
             if (!app.Environment.IsProduction())
             {
                 app.UseHttpsRedirection();
@@ -173,7 +178,6 @@ public static class Program
             app.MapControllers();
 
             await app.RunAsync();
-
             return 0;
         }
         catch (Exception ex) when (ex is not HostAbortedException)
