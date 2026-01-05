@@ -115,8 +115,27 @@ public static class Program
 
             var app = builder.Build();
 
+            // --- AUTOMATIC MIGRATIONS ON STARTUP ---
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<ElixDbContext>();
+                    Log.Information("Checking for pending migrations...");
+                    // Migrate() s'occupe de créer la DB si elle n'existe pas et d'appliquer les migrations manquantes
+                    await context.Database.MigrateAsync();
+                    Log.Information("Database migrations applied successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "An error occurred while migrating the database.");
+                }
+            }
+
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")
+            // Ajout de app.Environment.IsProduction() pour voir Swagger sur ton VPS
+            if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local" || app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
@@ -144,6 +163,7 @@ public static class Program
             app.UseAuthentication();
             app.UseAuthorization();
 
+            // On ne redirige vers HTTPS que si on n'est pas derrière le proxy Nginx du VPS
             if (!app.Environment.IsProduction())
             {
                 app.UseHttpsRedirection();
