@@ -28,6 +28,10 @@ RUN dotnet publish "ElixBackend.WebApp/ElixBackend.WebApp.csproj" -c Release -o 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS api-final
 WORKDIR /app
 COPY --from=publish-api /app/publish/api .
+
+# Création explicite du dossier pour le montage du volume
+RUN mkdir -p wwwroot/uploads && chmod -R 777 wwwroot/uploads
+
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "ElixBackend.API.dll"]
 
@@ -35,5 +39,9 @@ ENTRYPOINT ["dotnet", "ElixBackend.API.dll"]
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS webapp-final
 WORKDIR /app
 COPY --from=publish-webapp /app/publish/webapp .
+
+# Création explicite du dossier pour le montage du volume
+RUN mkdir -p wwwroot/uploads && chmod -R 777 wwwroot/uploads
+
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "ElixBackend.WebApp.dll"]

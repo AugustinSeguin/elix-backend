@@ -10,8 +10,10 @@ using Serilog.Events;
 using Microsoft.Extensions.FileProviders;
 
 var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+var currentDirectory = Directory.GetCurrentDirectory();
+
 var configuration = new ConfigurationBuilder()
-    .SetBasePath(AppContext.BaseDirectory)
+    .SetBasePath(currentDirectory)
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
     .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables()
@@ -29,19 +31,18 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting WebApp host ({Environment})...", environment);
+    Log.Information("Current Working Directory: {Directory}", currentDirectory);
 
     var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     {
         Args = args,
         EnvironmentName = environment,
-        ContentRootPath = AppContext.BaseDirectory
+        ContentRootPath = currentDirectory // Aligné avec l'API
     });
 
-    // Remplace la configuration par celle chargée explicitement
     builder.Configuration.Sources.Clear();
     builder.Configuration.AddConfiguration(configuration);
 
-    // Utilise Serilog comme provider de logs
     builder.Host.UseSerilog();
 
     builder.Services.AddDbContext<ElixDbContext>(options =>
@@ -77,41 +78,53 @@ try
         {
             options.LoginPath = "/User/Login";
             options.AccessDeniedPath = "/User/Login";
+            options.Cookie.Name = "ElixAuthCookie";
         });
 
     var app = builder.Build();
 
-    if (!app.Environment.IsDevelopment() && app.Environment.EnvironmentName != "Local")
-    {
-        app.UseExceptionHandler("/Home/Error");
-    }
-    else 
+    if (!app.Environment.IsProduction())
     {
         app.UseDeveloperExceptionPage();
         app.UseHttpsRedirection();
     }
+    else 
+    {
+        app.UseExceptionHandler("/Home/Error");
+    }
 
+    // Serve les fichiers statiques de base (CSS, JS) de wwwroot
     app.UseStaticFiles();
 
-    var uploadsPath = builder.Configuration["FileStorage:UploadsPath"] ?? string.Empty;
+    // --- CONFIGURATION DES UPLOADS (SYNCHRO AVEC API) ---
+    var uploadsPath = app.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
+    
+    // Chemin absolu vers le dossier partagé
+    var physicalPath = Path.IsPathRooted(uploadsPath)
+        ? uploadsPath
+        : Path.Combine(app.Environment.ContentRootPath, uploadsPath);
 
-    if (!string.IsNullOrEmpty(uploadsPath))
+    Log.Information("WebApp attempting to access uploads at: {Path}", physicalPath);
+
+    try 
     {
-        var physicalPath = Path.IsPathRooted(uploadsPath)
-            ? uploadsPath
-            : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
-
         if (!Directory.Exists(physicalPath))
         {
+            Log.Information("Creating directory: {Path}", physicalPath);
             Directory.CreateDirectory(physicalPath);
         }
 
-        // Serve the same uploads folder under /uploads for the WebApp
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(physicalPath),
             RequestPath = "/uploads"
         });
+        
+        Log.Information("WebApp static files for /uploads configured.");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "Failed to mount /uploads in WebApp");
     }
 
     app.UseRouting();
@@ -127,10 +140,9 @@ try
 
     await app.RunAsync();
 }
-catch (Exception ex)
+catch (Exception ex) when (ex is not HostAbortedException)
 {
     Log.Fatal(ex, "WebApp host terminated unexpectedly");
-    throw;
 }
 finally
 {

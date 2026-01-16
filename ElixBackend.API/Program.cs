@@ -19,8 +19,12 @@ public static class Program
     private static async Task<int> Main(string[] args)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+        
+        // Utilisation de CurrentDirectory pour garantir que l'on pointe sur /app dans Docker
+        var currentDirectory = Directory.GetCurrentDirectory();
+
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
+            .SetBasePath(currentDirectory)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
             .AddEnvironmentVariables()
@@ -38,11 +42,13 @@ public static class Program
         try
         {
             Log.Information("Starting web host ({Environment})...", environment);
+            Log.Information("Current Working Directory: {Directory}", currentDirectory);
 
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
                 Args = args,
-                ContentRootPath = AppContext.BaseDirectory,
+                // On force le ContentRootPath sur le dossier de travail actuel (/app)
+                ContentRootPath = currentDirectory,
                 EnvironmentName = environment
             });
 
@@ -53,14 +59,14 @@ public static class Program
             builder.Host.UseSerilog(Log.Logger);
 
             // --- CONFIGURATION CORS ---
-            // On récupère l'URL du front depuis l'environnement (défini dans docker-compose)
             var frontEndUrl = builder.Configuration["FRONTEND_URL"] ?? "https://app.elix.cleanascode.fr";
+            var backOfficeUrl = "https://backoffice.elix.cleanascode.fr";
             
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("WebAppPolicy", policy =>
                 {
-                    policy.WithOrigins(frontEndUrl)
+                    policy.WithOrigins(frontEndUrl, backOfficeUrl) // Ajout des deux origines
                           .AllowAnyMethod()
                           .AllowAnyHeader()
                           .AllowCredentials();
@@ -75,7 +81,7 @@ public static class Program
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             var jwtSecretKey = builder.Configuration["JwtSettings:SecretKey"];
-            if (jwtSecretKey != null)
+            if (!string.IsNullOrEmpty(jwtSecretKey))
             {
                 var key = Encoding.ASCII.GetBytes(jwtSecretKey);
                 builder.Services.AddAuthentication(options =>
@@ -139,31 +145,47 @@ public static class Program
                 }
             }
 
-            if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local" || app.Environment.IsProduction())
+            if (!app.Environment.IsProduction())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            // Static Files
+            // --- STATIC FILES CONFIGURATION (IMAGES) ---
             try
             {
-                var uploadsPath = builder.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
-                var uploadsFolder = Path.IsPathRooted(uploadsPath) ? uploadsPath : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
-                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+                // Priorité à la variable d'environnement définie dans docker-compose
+                var uploadsPath = app.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
+                
+                // On construit le chemin absolu basé sur la racine de l'app (/app)
+                var uploadsFolder = Path.IsPathRooted(uploadsPath) 
+                    ? uploadsPath 
+                    : Path.Combine(app.Environment.ContentRootPath, uploadsPath);
+
+                Log.Information("Attempting to serve static files from: {Path}", uploadsFolder);
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Log.Information("Folder not found. Creating directory: {Path}", uploadsFolder);
+                    Directory.CreateDirectory(uploadsFolder);
+                }
 
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(uploadsFolder),
                     RequestPath = "/uploads"
                 });
+                
+                Log.Information("Static files successfully configured at /uploads");
             }
-            catch (Exception ex) { Log.Warning(ex, "Could not configure static file serving"); }
+            catch (Exception ex) 
+            { 
+                Log.Error(ex, "Could not configure static file serving. Check folder permissions."); 
+            }
 
             app.UseRouting();
 
-            // --- APPLICATION DU CORS ---
-            // Doit être placé APRES UseRouting et AVANT UseAuthentication/Authorization
+            // CORS doit être AVANT Auth
             app.UseCors("WebAppPolicy");
 
             app.UseAuthentication();
