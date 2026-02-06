@@ -1,4 +1,5 @@
 using ElixBackend.Business.DTO;
+using ElixBackend.Business.IService;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
@@ -11,6 +12,7 @@ namespace ElixBackend.Tests.Business.Services;
 public class UserServiceTest
 {
     private Mock<IUserRepository> _userRepositoryMock;
+    private Mock<IUserPointService> _userPointServiceMock;
     private Mock<ILogger<UserService>> _loggerMock;
     private UserService _userService;
 
@@ -18,8 +20,9 @@ public class UserServiceTest
     public void SetUp()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
+        _userPointServiceMock = new Mock<IUserPointService>();
         _loggerMock = new Mock<ILogger<UserService>>();
-        _userService = new UserService(_userRepositoryMock.Object, _loggerMock.Object);
+        _userService = new UserService(_userRepositoryMock.Object, _userPointServiceMock.Object, _loggerMock.Object);
     }
 
     [Test]
@@ -59,9 +62,11 @@ public class UserServiceTest
 
         var result = await _userService.GetAllUsersAsync();
 
-        Assert.That(result.Count(), Is.EqualTo(2));
-        Assert.That(result.Any(d => d.Email == "john@doe.com"), Is.True);
-        Assert.That(result.Any(d => d.Email == "jane@smith.com"), Is.True);
+        Assert.That(result, Is.Not.Null);
+        var asList = result!.ToList();
+        Assert.That(asList.Count, Is.EqualTo(2));
+        Assert.That(asList.Any(d => d.Email == "john@doe.com"), Is.True);
+        Assert.That(asList.Any(d => d.Email == "jane@smith.com"), Is.True);
     }
 
     [Test]
@@ -130,6 +135,8 @@ public class UserServiceTest
     {
         var user = new User { Id = 6, Firstname = "Charlie", Lastname = "Brown", Email = "charlie@brown.com", PasswordHash = "hash" };
         _userRepositoryMock.Setup(r => r.GetUserByIdAsync(6)).ReturnsAsync(user);
+        _userPointServiceMock.Setup(s => s.GetUserPoints(6)).ReturnsAsync(new List<UserPointDto>());
+        _userPointServiceMock.Setup(s => s.GetTotalPointsByUserIdAsync(6)).ReturnsAsync(0);
 
         var result = await _userService.GetMeAsync(6);
 
@@ -137,7 +144,23 @@ public class UserServiceTest
         Assert.That(result!.Id, Is.EqualTo(user.Id));
         Assert.That(result.Email, Is.EqualTo(user.Email));
         Assert.That(result.Firstname, Is.EqualTo(user.Firstname));
+        Assert.That(result.UserPoints, Is.Not.Null);
+        Assert.That(result.BadgeUrl, Is.EqualTo("/beginner.png"));
         _userRepositoryMock.Verify(r => r.GetUserByIdAsync(6), Times.Once);
+    }
+
+    [Test]
+    public async Task GetMeAsync_ReturnsAdvancedBadge_WhenPointsAboveAdvanced()
+    {
+        var user = new User { Id = 7, Firstname = "Dana", Lastname = "Doe", Email = "dana@doe.com", PasswordHash = "hash" };
+        _userRepositoryMock.Setup(r => r.GetUserByIdAsync(7)).ReturnsAsync(user);
+        _userPointServiceMock.Setup(s => s.GetUserPoints(7)).ReturnsAsync(new List<UserPointDto>());
+        _userPointServiceMock.Setup(s => s.GetTotalPointsByUserIdAsync(7)).ReturnsAsync(200);
+
+        var result = await _userService.GetMeAsync(7);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.BadgeUrl, Is.EqualTo("/advanced.png"));
     }
 
     [Test]

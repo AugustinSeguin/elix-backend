@@ -21,6 +21,10 @@ namespace ElixBackend.Business.DTO
 
         public string? PictureMediaPath { get; set; }
 
+        public List<UserPointDto>? UserPoints { get; set; }
+
+        public string? BadgeUrl { get; set; }
+
 
         public User UserDtoToUser(UserDto userDto)
         {

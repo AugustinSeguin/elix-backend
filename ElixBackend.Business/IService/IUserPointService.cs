@@ -10,5 +10,6 @@ public interface IUserPointService
     Task<UserPointDto?> UpdateUserPointAsync(UserPointDto up);
     Task<UserPointDto?> GetUserPointsByCategory(int categoryId, int userId);
     Task<IEnumerable<UserPointDto>?> GetUserPoints(int userId);
+    Task<int?> GetTotalPointsByUserIdAsync(int userId);
     Task<bool?> DeleteUserPointAsync(int id);
 }

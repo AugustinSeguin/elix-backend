@@ -67,7 +67,8 @@ public class UserPointServiceTest
         _repoMock.Setup(r => r.GetAllUserPointsAsync()).ReturnsAsync(list);
 
         var result = await _service.GetAllUserPointsAsync();
-        var asList = result.ToList();
+        Assert.That(result, Is.Not.Null);
+        var asList = result!.ToList();
 
         Assert.That(asList.Count, Is.EqualTo(2));
         Assert.That(asList.Any(x => x.Id == 1 && x.UserId == 10 && x.CategoryId == 11 && x.Points == 1));
@@ -143,8 +144,34 @@ public class UserPointServiceTest
         var result = await _service.GetUserPoints(1);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result.Count(), Is.EqualTo(2));
-        Assert.That(result.Any(x => x.CategoryId == 2 && x.Points == 10), Is.True);
-        Assert.That(result.Any(x => x.CategoryId == 3 && x.Points == 20), Is.True);
+        var asList = result!.ToList();
+        Assert.That(asList.Count, Is.EqualTo(2));
+        Assert.That(asList.Any(x => x.CategoryId == 2 && x.Points == 10), Is.True);
+        Assert.That(asList.Any(x => x.CategoryId == 3 && x.Points == 20), Is.True);
+    }
+
+    [Test]
+    public async Task GetTotalPointsByUserIdAsync_ReturnsSum()
+    {
+        var list = new List<UserPoint>
+        {
+            new UserPoint { Id = 1, UserId = 1, CategoryId = 2, Points = 10 },
+            new UserPoint { Id = 2, UserId = 1, CategoryId = 3, Points = 20 }
+        };
+        _repoMock.Setup(r => r.GetUserPoints(1)).ReturnsAsync(list);
+
+        var result = await _service.GetTotalPointsByUserIdAsync(1);
+
+        Assert.That(result, Is.EqualTo(30));
+    }
+
+    [Test]
+    public async Task GetTotalPointsByUserIdAsync_ReturnsNull_OnException()
+    {
+        _repoMock.Setup(r => r.GetUserPoints(1)).ThrowsAsync(new Exception("db error"));
+
+        var result = await _service.GetTotalPointsByUserIdAsync(1);
+
+        Assert.That(result, Is.Null);
     }
 }

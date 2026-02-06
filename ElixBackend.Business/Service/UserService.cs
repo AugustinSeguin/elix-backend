@@ -1,12 +1,13 @@
 using ElixBackend.Business.DTO;
 using ElixBackend.Business.IService;
 using ElixBackend.Domain.Entities;
+using ElixBackend.Domain.Enum;
 using ElixBackend.Infrastructure.IRepository;
 using Microsoft.Extensions.Logging;
 
 namespace ElixBackend.Business.Service
 {
-    public class UserService(IUserRepository userRepository, ILogger<UserService> logger) : IUserService
+    public class UserService(IUserRepository userRepository, IUserPointService userPointService, ILogger<UserService> logger) : IUserService
     {
         // Map User entity to UserDto
         private static UserDto? ToDto(User? user)
@@ -63,7 +64,7 @@ namespace ElixBackend.Business.Service
             try
             {
                 var users = await userRepository.GetAllUsersAsync();
-                return users.Select(u => ToDto(u)!).Where(d => d != null)!;
+                return users.Select(ToDto).Where(d => d != null).Select(d => d!);
             }
             catch (Exception ex)
             {
@@ -72,34 +73,34 @@ namespace ElixBackend.Business.Service
             }
         }
 
-        public async Task<UserDto?> AddUserAsync(UserDto userDto)
+        public async Task<UserDto?> AddUserAsync(UserDto user)
         {
             try
             {
-                var user = userDto.UserDtoToUser(userDto);
-                var newUser = await userRepository.AddUserAsync(user);
+                var entity = user.UserDtoToUser(user);
+                var newUser = await userRepository.AddUserAsync(entity);
                 await userRepository.SaveChangesAsync();
                 return ToDto(newUser);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "UserService.AddUserAsync failed for {@UserDto}", userDto);
+                logger.LogError(ex, "UserService.AddUserAsync failed for {@UserDto}", user);
                 return null;
             }
         }
 
-        public async Task<UserDto?> UpdateUserAsync(UserDto userDto)
+        public async Task<UserDto?> UpdateUserAsync(UserDto user)
         {
             try
             {
-                var user = userDto.UserDtoToUser(userDto);
-                var userUpdated = await userRepository.UpdateUserAsync(user);
+                var entity = user.UserDtoToUser(user);
+                var userUpdated = await userRepository.UpdateUserAsync(entity);
                 await userRepository.SaveChangesAsync();
                 return ToDto(userUpdated);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "UserService.UpdateUserAsync failed for {@UserDto}", userDto);
+                logger.LogError(ex, "UserService.UpdateUserAsync failed for {@UserDto}", user);
                 return null;
             }
         }
@@ -123,13 +124,38 @@ namespace ElixBackend.Business.Service
             try
             {
                 var user = await userRepository.GetUserByIdAsync(userId);
-                return ToDto(user);
+                var dto = ToDto(user);
+                if (dto == null)
+                {
+                    return null;
+                }
+
+                var pointsList = await userPointService.GetUserPoints(userId);
+                dto.UserPoints = pointsList?.ToList() ?? new List<UserPointDto>();
+
+                var totalPoints = await userPointService.GetTotalPointsByUserIdAsync(userId) ?? 0;
+                dto.BadgeUrl = GetBadgeUrl(totalPoints);
+
+                return dto;
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "UserService.GetMeAsync failed for userId {UserId}", userId);
                 return null;
             }
+        }
+
+        private static string GetBadgeUrl(int totalPoints)
+        {
+            if (totalPoints >= (int)Points.Advanced)
+            {
+                return "/advanced.png";
+            }        
+            if (totalPoints >= (int)Points.Confirmed)
+            {
+                return "/confirmed.png";
+            }         
+            return "/beginner.png";
         }
     }
 }

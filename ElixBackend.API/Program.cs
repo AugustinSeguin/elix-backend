@@ -152,6 +152,9 @@ public static class Program
                 app.UseSwaggerUI();
             }
 
+            // Serve les fichiers statiques de base (CSS, JS) de wwwroot
+            app.UseStaticFiles();
+
             // Gestion des fichiers statiques
             var uploadsPath = app.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
             var uploadsFolder = Path.IsPathRooted(uploadsPath) ? uploadsPath : Path.Combine(app.Environment.ContentRootPath, uploadsPath);

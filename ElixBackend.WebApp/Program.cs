@@ -31,7 +31,6 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting WebApp host ({Environment})...", environment);
-    Log.Information("Current Working Directory: {Directory}", currentDirectory);
 
     var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     {
@@ -55,6 +54,8 @@ try
     // Injection de dépendances
     builder.Services.AddScoped<IUserRepository, UserRepository>();
     builder.Services.AddScoped<ITokenRepository, TokenRepository>();
+    builder.Services.AddScoped<IUserPointRepository, UserPointRepository>();
+    builder.Services.AddScoped<IUserPointService, UserPointService>();
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<ITokenService, TokenService>();
     builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -146,5 +147,5 @@ catch (Exception ex) when (ex is not HostAbortedException)
 }
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }

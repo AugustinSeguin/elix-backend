@@ -117,6 +117,20 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
         }
     }
 
+    public async Task<int?> GetTotalPointsByUserIdAsync(int userId)
+    {
+        try
+        {
+            var list = await userPointRepository.GetUserPoints(userId);
+            return list.Sum(up => up.Points);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "UserPointService.GetTotalPointsByUserIdAsync failed for userId {UserId}", userId);
+            return null;
+        }
+    }
+
     public async Task<bool?> DeleteUserPointAsync(int id)
     {
         try
