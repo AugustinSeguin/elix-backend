@@ -1,4 +1,4 @@
-@ElixBackend_HostAddress = https://api.elix.cleanascode.fr
+@ElixBackend_HostAddress = http://localhost:5059
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0Iiwicm9sZSI6ImFkbWluIiwianRpIjoiZmQ0MTdkY2MtY2FkNi00MGZkLWE4YzMtOTZlZTczZWI3YmZlIiwibmJmIjoxNzY2MzE4MTEyLCJleHAiOjE3NjYzMjUzMTIsImlhdCI6MTc2NjMxODExMn0.G0OUTWA1v-XSedcx1-NoW1ToCq63M8BiU0vxSEdCNvQ
 
 ### LOGIN
@@ -6,7 +6,7 @@ POST {{ElixBackend_HostAddress}}/api/User/login
 Content-Type: application/json
 
 {
-  "email": "augustin@email.com",
+  "email": "augustinseguin@gmail.com",
   "password": "MotDePasse123"
 }
 
@@ -17,12 +17,12 @@ POST {{ElixBackend_HostAddress}}/api/User/register
 Content-Type: application/json
 
 {
-  "email": "leandra@design2takeaway.com",
+  "email": "augustinseguin@gmail.com",
   "password": "MotDePasse123",
   "passwordRepeated": "MotDePasse123",
   "firstname": "leandra",
   "lastname": "DI GIUGNO",
-  "username": "leandradiugno",
+  "username": "leandradiugno1",
   "birthdate": "2000-01-01T00:00:00Z",
   "gender": 0,
   "isPremium": false,

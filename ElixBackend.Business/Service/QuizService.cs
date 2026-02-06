@@ -17,32 +17,23 @@ public class QuizService(
         {
             // Récupérer toutes les questions de la catégorie (avec leurs réponses)
             var categoryQuestions = await questionService.GetQuestionsByCategoryIdAsync(categoryId);
-            var questionDtos = categoryQuestions?.ToList() ?? [];
+            var questionDtos = categoryQuestions?.ToList() ?? new List<QuestionDto>();
+
+            // Ne garder que les questions valides : doivent avoir des réponses et au moins une réponse valide
+            questionDtos = questionDtos
+                .Where(q => q.Answers != null && q.Answers.Any() && q.Answers.Any(a => a.IsValid))
+                .ToList();
 
             if (!questionDtos.Any())
-            {
                 return null;
-            }
 
-            // Filtrer les questions : au minimum 2 réponses et 1 réponse valide
-            questionDtos = questionDtos.Where(q =>
-                q.Answers != null &&
-                q.Answers.Count() >= 2 &&
-                q.Answers.Any(a => a.IsValid)
-            ).ToList();
-
-            if (!questionDtos.Any())
-            {
-                return null;
-            }
-
-            // Grouper les réponses de l'utilisateur par question
+            // Grouper les réponses de l'utilisateur par question (pour priorisation)
             var userAnswersByQuestion = new Dictionary<int, List<UserAnswerDto>>();
 
             foreach (var question in questionDtos)
             {
-                var userAnswers = await userAnswerService.GetUserAnswerByUserIdAsync(userId, question.Id);
-                var userAnswersList = (userAnswers ?? []).Where(ua => ua != null).Select(ua => ua!).ToList();
+                var userAnswers = await userAnswerService.GetUserAnswerByUserIdAsync(userId, question.Id) ?? Enumerable.Empty<UserAnswerDto>();
+                var userAnswersList = userAnswers.Where(ua => ua != null).Select(ua => ua!).ToList();
 
                 if (userAnswersList.Any())
                 {
@@ -50,7 +41,7 @@ public class QuizService(
                 }
             }
 
-            // Classifier les questions
+            // Classifier les questions selon la priorite : non répondues, répondues incorrectement, répondues correctement
             var notAnsweredQuestions = new List<QuestionDto>();
             var incorrectlyAnsweredQuestions = new List<QuestionDto>();
             var correctlyAnsweredQuestions = new List<QuestionDto>();
@@ -66,17 +57,13 @@ public class QuizService(
                     var hasIncorrectAnswer = userAnswers.Any(ua => !ua.IsCorrect);
 
                     if (hasIncorrectAnswer)
-                    {
                         incorrectlyAnsweredQuestions.Add(question);
-                    }
                     else
-                    {
                         correctlyAnsweredQuestions.Add(question);
-                    }
                 }
             }
 
-            // Créer une liste ordonnée de toutes les questions candidates par priorité
+            // Construire liste candidate ordonnée par priorité
             var allCandidates = new List<QuestionDto>();
             allCandidates.AddRange(notAnsweredQuestions);
             allCandidates.AddRange(incorrectlyAnsweredQuestions);
@@ -86,36 +73,53 @@ public class QuizService(
             var candidatesMCQ = allCandidates.Where(q => q.TypeQuestion == TypeQuestion.QuizModeMcq).ToList();
             var candidatesTF = allCandidates.Where(q => q.TypeQuestion == TypeQuestion.TrueFalseActive).ToList();
 
-            // Sélectionner 5 de chaque (ou moins si pas assez)
-            var selectedMCQ = candidatesMCQ.Take(5).ToList();
-            var selectedTF = candidatesTF.Take(5).ToList();
-
-            if (!selectedMCQ.Any() && !selectedTF.Any())
-            {
-                return null;
-            }
-
-            // Organiser selon le pattern : 2 TF, 2 MCQ, répété
             var finalSelection = new List<QuestionDto>();
-            int mcqIndex = 0;
-            int tfIndex = 0;
 
-            while (mcqIndex < selectedMCQ.Count || tfIndex < selectedTF.Count)
+            // Si on a des questions des deux types, essayer de mixer
+            if (candidatesMCQ.Any() && candidatesTF.Any())
             {
-                // Ajouter jusqu'à 2 TF
-                for (int i = 0; i < 2 && tfIndex < selectedTF.Count; i++)
+                var i = 0; // index TF
+                var j = 0; // index MCQ
+
+                // Alterner TF / MCQ pour obtenir jusqu'à 10 questions
+                while (finalSelection.Count < 10 && (i < candidatesTF.Count || j < candidatesMCQ.Count))
                 {
-                    finalSelection.Add(selectedTF[tfIndex++]);
+                    if (i < candidatesTF.Count)
+                    {
+                        finalSelection.Add(candidatesTF[i++]);
+                    }
+
+                    if (finalSelection.Count >= 10)
+                        break;
+
+                    if (j < candidatesMCQ.Count)
+                    {
+                        finalSelection.Add(candidatesMCQ[j++]);
+                    }
                 }
 
-                // Ajouter jusqu'à 2 MCQ
-                for (int i = 0; i < 2 && mcqIndex < selectedMCQ.Count; i++)
+                // Remplir si nécessaire avec les candidats restants (ordre de priorité préservé)
+                if (finalSelection.Count < 10)
                 {
-                    finalSelection.Add(selectedMCQ[mcqIndex++]);
+                    var remaining = allCandidates.Except(finalSelection).ToList();
+                    foreach (var r in remaining)
+                    {
+                        finalSelection.Add(r);
+                        if (finalSelection.Count >= 10)
+                            break;
+                    }
                 }
             }
+            else
+            {
+                // Si on a un seul type ou pas les deux, on renvoie jusqu'à 10 questions dans l'ordre de priorité
+                finalSelection = allCandidates.Take(10).ToList();
+            }
 
-            // Les réponses sont déjà incluses dans les QuestionDto
+            // Retourner autant que disponible (peut être moins de 10)
+            if (!finalSelection.Any())
+                return null;
+
             var quizDto = new QuizDto
             {
                 Title = $"Quiz - Catégorie {categoryId}",

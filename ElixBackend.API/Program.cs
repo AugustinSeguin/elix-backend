@@ -19,8 +19,6 @@ public static class Program
     private static async Task<int> Main(string[] args)
     {
         var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
-        
-        // Utilisation de CurrentDirectory pour garantir que l'on pointe sur /app dans Docker
         var currentDirectory = Directory.GetCurrentDirectory();
 
         var configuration = new ConfigurationBuilder()
@@ -42,34 +40,41 @@ public static class Program
         try
         {
             Log.Information("Starting web host ({Environment})...", environment);
-            Log.Information("Current Working Directory: {Directory}", currentDirectory);
 
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions
             {
                 Args = args,
-                // On force le ContentRootPath sur le dossier de travail actuel (/app)
                 ContentRootPath = currentDirectory,
                 EnvironmentName = environment
             });
 
             builder.Configuration.Sources.Clear();
             builder.Configuration.AddConfiguration(configuration);
-
             builder.Logging.ClearProviders();
             builder.Host.UseSerilog(Log.Logger);
 
-            // --- CONFIGURATION CORS ---
-            var frontEndUrl = builder.Configuration["FRONTEND_URL"] ?? "https://app.elix.cleanascode.fr";
-            var backOfficeUrl = "https://backoffice.elix.cleanascode.fr";
-            
+            // --- CONFIGURATION CORS CORRIGÉE ---
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("WebAppPolicy", policy =>
                 {
-                    policy.WithOrigins(frontEndUrl, backOfficeUrl) // Ajout des deux origines
+                    // Récupération de l'URL de prod depuis la config
+                    var frontEndUrl = builder.Configuration["FRONTEND_URL"];
+                    
+                    var allowedOrigins = new List<string> 
+                    { 
+                        "https://backoffice.elix.cleanascode.fr",
+                        "http://localhost:5173", // Port par défaut de Vite
+                        "http://localhost:3000"  // Port par défaut de Create-React-App
+                    };
+
+                    if (!string.IsNullOrEmpty(frontEndUrl))
+                        allowedOrigins.Add(frontEndUrl);
+
+                    policy.WithOrigins(allowedOrigins.ToArray())
                           .AllowAnyMethod()
                           .AllowAnyHeader()
-                          .AllowCredentials();
+                          .AllowCredentials(); // Nécessaire si vous envoyez des cookies ou l'Auth header dans certains cas
                 });
             });
 
@@ -77,6 +82,7 @@ public static class Program
             builder.Services.AddSwaggerGen();
             builder.Services.AddControllers();
 
+            // ... (Le reste de vos injections de services : DbContext, Auth, Repositories reste inchangé)
             builder.Services.AddDbContext<ElixDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -104,8 +110,8 @@ public static class Program
             }
 
             builder.Services.AddAuthorization();
-
-            // Repositories & Services
+            
+            // Injections (UserRepository, UserService, etc.) - Gardez votre bloc ici
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<ITokenRepository, TokenRepository>();
             builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
@@ -128,20 +134,15 @@ public static class Program
 
             var app = builder.Build();
 
-            // Automatic Migrations
+            // Migrations automatiques
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-                try
-                {
+                try {
                     var context = services.GetRequiredService<ElixDbContext>();
-                    Log.Information("Checking for pending migrations...");
                     await context.Database.MigrateAsync();
-                    Log.Information("Database migrations applied successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Log.Error(ex, "An error occurred while migrating the database.");
+                } catch (Exception ex) {
+                    Log.Error(ex, "Migration error");
                 }
             }
 
@@ -151,42 +152,21 @@ public static class Program
                 app.UseSwaggerUI();
             }
 
-            // --- STATIC FILES CONFIGURATION (IMAGES) ---
-            try
+            // Gestion des fichiers statiques
+            var uploadsPath = app.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
+            var uploadsFolder = Path.IsPathRooted(uploadsPath) ? uploadsPath : Path.Combine(app.Environment.ContentRootPath, uploadsPath);
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            app.UseStaticFiles(new StaticFileOptions
             {
-                // Priorité à la variable d'environnement définie dans docker-compose
-                var uploadsPath = app.Configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
-                
-                // On construit le chemin absolu basé sur la racine de l'app (/app)
-                var uploadsFolder = Path.IsPathRooted(uploadsPath) 
-                    ? uploadsPath 
-                    : Path.Combine(app.Environment.ContentRootPath, uploadsPath);
-
-                Log.Information("Attempting to serve static files from: {Path}", uploadsFolder);
-
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Log.Information("Folder not found. Creating directory: {Path}", uploadsFolder);
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                app.UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = new PhysicalFileProvider(uploadsFolder),
-                    RequestPath = "/uploads"
-                });
-                
-                Log.Information("Static files successfully configured at /uploads");
-            }
-            catch (Exception ex) 
-            { 
-                Log.Error(ex, "Could not configure static file serving. Check folder permissions."); 
-            }
+                FileProvider = new PhysicalFileProvider(uploadsFolder),
+                RequestPath = "/uploads"
+            });
 
             app.UseRouting();
 
-            // CORS doit être AVANT Auth
-            app.UseCors("WebAppPolicy");
+            // --- PLACEMENT CRITIQUE ---
+            app.UseCors("WebAppPolicy"); // Doit être ici
 
             app.UseAuthentication();
             app.UseAuthorization();

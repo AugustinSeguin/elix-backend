@@ -4,11 +4,9 @@ using ElixBackend.Business.Service;
 using ElixBackend.Domain.Enum;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NUnit.Framework.Legacy;
 
 namespace ElixBackend.Tests.Business.Services;
 
-[TestFixture]
 public class QuizServiceTest
 {
     private Mock<IQuestionService> _questionServiceMock;
@@ -25,7 +23,7 @@ public class QuizServiceTest
         _userPointServiceMock = new Mock<IUserPointService>();
         _loggerMock = new Mock<ILogger<QuizService>>();
         _service = new QuizService(_questionServiceMock.Object, _userAnswerServiceMock.Object,
-            _userPointServiceMock.Object, _loggerMock?.Object);
+            _userPointServiceMock.Object, _loggerMock.Object);
     }
 
     // Helpers
@@ -52,9 +50,9 @@ public class QuizServiceTest
         return q;
     }
 
-    private static IEnumerable<UserAnswerDto?> Answers(params (int questionId, bool isCorrect)[] tuples)
+    private static IEnumerable<UserAnswerDto> Answers(params (int questionId, bool isCorrect)[] tuples)
     {
-        return tuples.Select(t => (UserAnswerDto?)new UserAnswerDto
+        return tuples.Select(t => new UserAnswerDto
         {
             UserId = 1,
             QuestionId = t.questionId,
@@ -105,14 +103,14 @@ public class QuizServiceTest
         Assert.That(resultQuestions.Count(q => q.TypeQuestion == TypeQuestion.QuizModeMcq), Is.EqualTo(5));
         Assert.That(resultQuestions.Count(q => q.TypeQuestion == TypeQuestion.TrueFalseActive), Is.EqualTo(5));
 
-        // Check pattern: 2 TF, 2 MCQ, 2 TF, 2 MCQ, 1 TF, 1 MCQ
+        // Check pattern: alternating TF / MCQ
         Assert.That(resultQuestions[0].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
-        Assert.That(resultQuestions[1].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
-        Assert.That(resultQuestions[2].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[1].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[2].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
         Assert.That(resultQuestions[3].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
         Assert.That(resultQuestions[4].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
-        Assert.That(resultQuestions[5].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
-        Assert.That(resultQuestions[6].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[5].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
+        Assert.That(resultQuestions[6].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
         Assert.That(resultQuestions[7].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
         Assert.That(resultQuestions[8].TypeQuestion, Is.EqualTo(TypeQuestion.TrueFalseActive));
         Assert.That(resultQuestions[9].TypeQuestion, Is.EqualTo(TypeQuestion.QuizModeMcq));
@@ -132,7 +130,7 @@ public class QuizServiceTest
         {
             if (q.Id <= 6)
             {
-                _userAnswerServiceMock.Setup(s => s.GetUserAnswerByUserIdAsync(1, q.Id)).ReturnsAsync(new List<UserAnswerDto?>());
+                _userAnswerServiceMock.Setup(s => s.GetUserAnswerByUserIdAsync(1, q.Id)).ReturnsAsync(new List<UserAnswerDto>());
             }
             else if (q.Id <= 11)
             {
@@ -149,12 +147,12 @@ public class QuizServiceTest
         var result = await _service.StartQuizAsync(1, categoryId);
 
         Assert.That(result, Is.Not.Null);
-        // We only have MCQ, so it should take top 5 MCQ.
-        Assert.That(result!.Questions.Count, Is.EqualTo(5));
+        // We only have MCQ, so it should take top 10 MCQ.
+        Assert.That(result!.Questions.Count, Is.EqualTo(10));
 
-        // Should contain Q1..Q5 (not answered)
-        var expectedIds = Enumerable.Range(1, 5).ToArray();
-        CollectionAssert.AreEqual(expectedIds, result.Questions.Select(q => q.Id).ToArray());
+        // Should contain Q1..Q10 (priorité not answered puis incorrect)
+        var expectedIds = Enumerable.Range(1, 10).ToArray();
+        Assert.That(result.Questions.Select(q => q.Id), Is.EqualTo(expectedIds));
     }
 
     [Test]
@@ -180,7 +178,7 @@ public class QuizServiceTest
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.Questions.Count, Is.EqualTo(10));
         // Order might be mixed (2 TF, 2 MCQ...), so we just check content
-        CollectionAssert.AreEquivalent(Enumerable.Range(1, 10).ToArray(), result.Questions.Select(q => q.Id).ToArray());
+        Assert.That(result.Questions.Select(q => q.Id), Is.EquivalentTo(Enumerable.Range(1, 10).ToArray()));
     }
 
     [Test]
@@ -229,14 +227,14 @@ public class QuizServiceTest
         _questionServiceMock.Setup(s => s.GetQuestionsByCategoryIdAsync(categoryId)).ReturnsAsync(questions);
 
         _userAnswerServiceMock.Setup(s => s.GetUserAnswerByUserIdAsync(1, It.IsAny<int>()))
-            .ReturnsAsync(new List<UserAnswerDto?>());
+            .ReturnsAsync(new List<UserAnswerDto>());
 
         var result = await _service.StartQuizAsync(1, categoryId);
 
         Assert.That(result, Is.Not.Null);
-        // Seules les questions 1 et 5 devraient être retournées
-        Assert.That(result!.Questions.Count, Is.EqualTo(2));
-        Assert.That(result.Questions.Select(q => q.Id).ToArray(), Is.EqualTo(new[] { 1, 5 }));
+        // Seules les questions 1, 2 et 5 devraient être retournées
+        Assert.That(result!.Questions.Count, Is.EqualTo(3));
+        Assert.That(result.Questions.Select(q => q.Id), Is.EqualTo(new[] { 1, 2, 5 }));
     }
 
     [Test]
@@ -245,7 +243,7 @@ public class QuizServiceTest
         var categoryId = 5;
         var questions = new List<QuestionDto>
         {
-            // Question avec seulement 1 réponse (invalide)
+            // Question avec seulement 1 réponse (valide)
             new QuestionDto
             {
                 Id = 1,
@@ -274,7 +272,9 @@ public class QuizServiceTest
 
         var result = await _service.StartQuizAsync(1, categoryId);
 
-        Assert.That(result, Is.Null);
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Questions.Count, Is.EqualTo(1));
+        Assert.That(result.Questions.First().Id, Is.EqualTo(1));
     }
 
     [Test]
