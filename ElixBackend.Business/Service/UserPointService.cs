@@ -6,14 +6,17 @@ using Microsoft.Extensions.Logging;
 
 namespace ElixBackend.Business.Service;
 
-public class UserPointService(IUserPointRepository userPointRepository, ILogger<UserPointService> logger) : IUserPointService
+public class UserPointService(IUserPointRepository userPointRepository, IQuestionRepository questionRepository, ILogger<UserPointService> logger) : IUserPointService
 {
     public async Task<UserPointDto?> GetUserByIdAsync(int id)
     {
         try
         {
             var up = await userPointRepository.GetUserPointByIdAsync(id);
-            return up is null ? null : ToDto(up);
+            if (up == null) return null;
+
+            var max = await questionRepository.GetTotalQuestionByCategoryAsync(up.CategoryId);
+            return ToDto(up, max);
         }
         catch (Exception ex)
         {
@@ -27,7 +30,13 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
         try
         {
             var list = await userPointRepository.GetAllUserPointsAsync();
-            return list.Select(ToDto);
+            var result = new List<UserPointDto>();
+            foreach (var up in list)
+            {
+                var max = await questionRepository.GetTotalQuestionByCategoryAsync(up.CategoryId);
+                result.Add(ToDto(up, max));
+            }
+            return result;
         }
         catch (Exception ex)
         {
@@ -57,7 +66,9 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
 
             var added = await userPointRepository.AddUserPointAsync(entity);
             await userPointRepository.SaveChangesAsync();
-            return ToDto(added);
+
+            var max = await questionRepository.GetTotalQuestionByCategoryAsync(added.CategoryId);
+            return ToDto(added, max);
         }
         catch (Exception ex)
         {
@@ -80,7 +91,9 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
 
             var updated = await userPointRepository.UpdateUserPointAsync(entity);
             await userPointRepository.SaveChangesAsync();
-            return ToDto(updated);
+
+            var max = await questionRepository.GetTotalQuestionByCategoryAsync(updated.CategoryId);
+            return ToDto(updated, max);
         }
         catch (Exception ex)
         {
@@ -94,7 +107,10 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
         try
         {
             var up = await userPointRepository.GetUserPointsByCategory(categoryId, userId);
-            return up is null ? null : ToDto(up);
+            if (up == null) return null;
+
+            var max = await questionRepository.GetTotalQuestionByCategoryAsync(categoryId);
+            return ToDto(up, max);
         }
         catch (Exception ex)
         {
@@ -108,7 +124,13 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
         try
         {
             var list = await userPointRepository.GetUserPoints(userId);
-            return list.Select(ToDto);
+            var result = new List<UserPointDto>();
+            foreach (var up in list)
+            {
+                var max = await questionRepository.GetTotalQuestionByCategoryAsync(up.CategoryId);
+                result.Add(ToDto(up, max));
+            }
+            return result;
         }
         catch (Exception ex)
         {
@@ -145,14 +167,15 @@ public class UserPointService(IUserPointRepository userPointRepository, ILogger<
         }
     }
 
-    private static UserPointDto ToDto(UserPoint up)
+    private static UserPointDto ToDto(UserPoint up, int maximumPoints)
     {
         return new UserPointDto
         {
             Id = up.Id,
             UserId = up.UserId,
             CategoryId = up.CategoryId,
-            Points = up.Points
+            Points = up.Points,
+            MaximumPoints = maximumPoints
         };
     }
 }

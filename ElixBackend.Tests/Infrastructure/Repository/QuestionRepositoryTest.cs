@@ -134,4 +134,24 @@ public class QuestionRepositoryTest
 
         Assert.That(result.Count(), Is.EqualTo(0));
     }
+
+    [Test]
+    public async Task GetTotalQuestionByCategoryAsync_ReturnsCorrectCount()
+    {
+        var questions = new List<Question>
+        {
+            new Question { Title = "Q1", CategoryId = 5 },
+            new Question { Title = "Q2", CategoryId = 5 },
+            new Question { Title = "Q3", CategoryId = 6 }
+        };
+        foreach (var q in questions)
+        {
+            await _repository.AddQuestionAsync(q);
+        }
+        await _repository.SaveChangesAsync();
+
+        var count = await _repository.GetTotalQuestionByCategoryAsync(5);
+
+        Assert.That(count, Is.EqualTo(2));
+    }
 }

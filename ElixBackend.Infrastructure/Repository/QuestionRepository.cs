@@ -32,6 +32,11 @@ public class QuestionRepository(ElixDbContext context) : IQuestionRepository
             .ToListAsync();
     }
 
+    public async Task<int> GetTotalQuestionByCategoryAsync(int categoryId)
+    {
+        return await context.Questions.CountAsync(q => q.CategoryId == categoryId);
+    }
+
     public Task<Question> UpdateQuestionAsync(Question question)
     {
         var entry = context.Questions.Update(question);
@@ -40,12 +45,9 @@ public class QuestionRepository(ElixDbContext context) : IQuestionRepository
 
     public async Task DeleteQuestionAsync(int id)
     {
-        var question = await context.Questions.FindAsync(id);
-        if (question != null)
-        {
-            context.Questions.Remove(question);
-            await context.SaveChangesAsync();
-        }
+        var q = await context.Questions.FindAsync(id);
+        if (q != null)
+            context.Questions.Remove(q);
     }
 
     public async Task<bool> SaveChangesAsync()

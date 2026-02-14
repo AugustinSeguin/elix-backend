@@ -14,6 +14,8 @@ public interface IQuestionRepository
     
     Task<IEnumerable<Question>> GetQuestionsByCategoryIdAsync(int categoryId);
 
+    Task<int> GetTotalQuestionByCategoryAsync(int categoryId);
+
     Task<Question> UpdateQuestionAsync(Question question);
 
     Task DeleteQuestionAsync(int id);

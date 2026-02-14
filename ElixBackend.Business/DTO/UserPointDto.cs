@@ -9,6 +9,8 @@ public class UserPointDto
 
     public int Points { get; set; } = 0;
 
+    public int MaximumPoints { get; set; } = 0;
+
     public UserDto? User { get; set; }
     public CategoryDto? Category { get; set; }
 }

@@ -11,6 +11,7 @@ namespace ElixBackend.Tests.Business.Services;
 public class UserPointServiceTest
 {
     private Mock<IUserPointRepository> _repoMock;
+    private Mock<IQuestionRepository> _questionRepoMock;
     private UserPointService _service;
     private Mock<ILogger<UserPointService>> _loggerMock;
 
@@ -18,8 +19,12 @@ public class UserPointServiceTest
     public void SetUp()
     {
         _repoMock = new Mock<IUserPointRepository>();
+        _questionRepoMock = new Mock<IQuestionRepository>();
         _loggerMock = new Mock<ILogger<UserPointService>>();
-        _service = new UserPointService(_repoMock.Object, _loggerMock.Object);
+        _service = new UserPointService(_repoMock.Object, _questionRepoMock.Object, _loggerMock.Object);
+
+        // Default question repo behavior: 0 questions
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(It.IsAny<int>())).ReturnsAsync(0);
     }
 
     [Test]
@@ -29,6 +34,7 @@ public class UserPointServiceTest
         var entity = new UserPoint { Id = 100, UserId = 1, CategoryId = 2, Points = 10 };
         _repoMock.Setup(r => r.AddUserPointAsync(It.IsAny<UserPoint>())).ReturnsAsync(entity);
         _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(2)).ReturnsAsync(5);
 
         var result = await _service.AddUserPointAsync(dto);
 
@@ -37,6 +43,7 @@ public class UserPointServiceTest
         Assert.That(result.UserId, Is.EqualTo(1));
         Assert.That(result.CategoryId, Is.EqualTo(2));
         Assert.That(result.Points, Is.EqualTo(10));
+        Assert.That(result.MaximumPoints, Is.EqualTo(5));
         _repoMock.Verify(r => r.AddUserPointAsync(It.Is<UserPoint>(u => u.UserId == dto.UserId && u.CategoryId == dto.CategoryId && u.Points == dto.Points)), Times.Once);
         _repoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -46,6 +53,7 @@ public class UserPointServiceTest
     {
         var entity = new UserPoint { Id = 5, UserId = 3, CategoryId = 4, Points = 7 };
         _repoMock.Setup(r => r.GetUserPointByIdAsync(5)).ReturnsAsync(entity);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(4)).ReturnsAsync(8);
 
         var result = await _service.GetUserByIdAsync(5);
 
@@ -54,6 +62,7 @@ public class UserPointServiceTest
         Assert.That(result.UserId, Is.EqualTo(3));
         Assert.That(result.CategoryId, Is.EqualTo(4));
         Assert.That(result.Points, Is.EqualTo(7));
+        Assert.That(result.MaximumPoints, Is.EqualTo(8));
     }
 
     [Test]
@@ -65,14 +74,16 @@ public class UserPointServiceTest
             new UserPoint { Id = 2, UserId = 12, CategoryId = 13, Points = 2 }
         };
         _repoMock.Setup(r => r.GetAllUserPointsAsync()).ReturnsAsync(list);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(11)).ReturnsAsync(3);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(13)).ReturnsAsync(4);
 
         var result = await _service.GetAllUserPointsAsync();
         Assert.That(result, Is.Not.Null);
         var asList = result!.ToList();
 
         Assert.That(asList.Count, Is.EqualTo(2));
-        Assert.That(asList.Any(x => x.Id == 1 && x.UserId == 10 && x.CategoryId == 11 && x.Points == 1));
-        Assert.That(asList.Any(x => x.Id == 2 && x.UserId == 12 && x.CategoryId == 13 && x.Points == 2));
+        Assert.That(asList.Any(x => x.Id == 1 && x.UserId == 10 && x.CategoryId == 11 && x.Points == 1 && x.MaximumPoints == 3));
+        Assert.That(asList.Any(x => x.Id == 2 && x.UserId == 12 && x.CategoryId == 13 && x.Points == 2 && x.MaximumPoints == 4));
     }
 
     [Test]
@@ -82,6 +93,7 @@ public class UserPointServiceTest
         var entity = new UserPoint { Id = 7, UserId = 20, CategoryId = 21, Points = 8 };
         _repoMock.Setup(r => r.UpdateUserPointAsync(It.IsAny<UserPoint>())).ReturnsAsync(entity);
         _repoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(21)).ReturnsAsync(9);
 
         var result = await _service.UpdateUserPointAsync(dto);
 
@@ -90,6 +102,7 @@ public class UserPointServiceTest
         Assert.That(result.UserId, Is.EqualTo(20));
         Assert.That(result.CategoryId, Is.EqualTo(21));
         Assert.That(result.Points, Is.EqualTo(8));
+        Assert.That(result.MaximumPoints, Is.EqualTo(9));
         _repoMock.Verify(r => r.UpdateUserPointAsync(It.Is<UserPoint>(u => u.Id == dto.Id && u.UserId == dto.UserId && u.CategoryId == dto.CategoryId && u.Points == dto.Points)), Times.Once);
         _repoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
@@ -111,6 +124,7 @@ public class UserPointServiceTest
     {
         var entity = new UserPoint { Id = 5, UserId = 3, CategoryId = 4, Points = 7 };
         _repoMock.Setup(r => r.GetUserPointsByCategory(4, 3)).ReturnsAsync(entity);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(4)).ReturnsAsync(12);
 
         var result = await _service.GetUserPointsByCategory(4, 3);
 
@@ -119,6 +133,7 @@ public class UserPointServiceTest
         Assert.That(result.UserId, Is.EqualTo(3));
         Assert.That(result.CategoryId, Is.EqualTo(4));
         Assert.That(result.Points, Is.EqualTo(7));
+        Assert.That(result.MaximumPoints, Is.EqualTo(12));
     }
 
     [Test]
@@ -140,14 +155,16 @@ public class UserPointServiceTest
             new UserPoint { Id = 2, UserId = 1, CategoryId = 3, Points = 20 }
         };
         _repoMock.Setup(r => r.GetUserPoints(1)).ReturnsAsync(list);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(2)).ReturnsAsync(5);
+        _questionRepoMock.Setup(q => q.GetTotalQuestionByCategoryAsync(3)).ReturnsAsync(6);
 
         var result = await _service.GetUserPoints(1);
 
         Assert.That(result, Is.Not.Null);
         var asList = result!.ToList();
         Assert.That(asList.Count, Is.EqualTo(2));
-        Assert.That(asList.Any(x => x.CategoryId == 2 && x.Points == 10), Is.True);
-        Assert.That(asList.Any(x => x.CategoryId == 3 && x.Points == 20), Is.True);
+        Assert.That(asList.Any(x => x.CategoryId == 2 && x.Points == 10 && x.MaximumPoints == 5), Is.True);
+        Assert.That(asList.Any(x => x.CategoryId == 3 && x.Points == 20 && x.MaximumPoints == 6), Is.True);
     }
 
     [Test]

@@ -52,3 +52,10 @@ Content-Type: application/json
 ### ArticleController - Supprimer un article (id=1)
 DELETE {{baseUrl}}/api/Article/1
 Authorization: Bearer {{token}}
+
+
+
+### ArticleController - Obtenir les articles récents (latest)
+GET {{baseUrl}}/api/Article/latest
+Authorization: Bearer {{token}}
+Accept: application/json
