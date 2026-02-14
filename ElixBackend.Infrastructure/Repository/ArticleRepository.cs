@@ -29,6 +29,14 @@ public class ArticleRepository(ElixDbContext context) : IArticleRepository
             .ToListAsync();
     }
 
+    public async Task<IEnumerable<Article>> GetLatestArticlesAsync(int count)
+    {
+        return await context.Articles
+            .OrderByDescending(a => a.Id)
+            .Take(count)
+            .ToListAsync();
+    }
+
     public Task<Article> UpdateArticleAsync(Article article)
     {
         var entry = context.Articles.Update(article);

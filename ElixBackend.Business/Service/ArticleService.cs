@@ -65,6 +65,20 @@ public class ArticleService(IArticleRepository articleRepository, ILogger<Articl
         }
     }
 
+    public async Task<IEnumerable<ArticleDto>?> GetLatestArticlesAsync(int count)
+    {
+        try
+        {
+            var articles = await articleRepository.GetLatestArticlesAsync(count);
+            return articles.Select(ArticleDto.FromEntity);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "ArticleService.GetLatestArticlesAsync failed for count {Count}", count);
+            return null;
+        }
+    }
+
     public async Task<ArticleDto?> UpdateArticleAsync(ArticleDto articleDto)
     {
         try

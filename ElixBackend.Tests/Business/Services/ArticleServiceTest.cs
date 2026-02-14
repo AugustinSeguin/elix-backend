@@ -123,4 +123,32 @@ public class ArticleServiceTest
         Assert.That(result, Is.True);
         _articleRepositoryMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
+
+    // --- Tests ajoutés pour GetLatestArticlesAsync (succès + erreur)
+    [Test]
+    public async Task GetLatestArticlesAsync_ReturnsDtos_WhenRepositoryReturns()
+    {
+        var articles = new List<Article>
+        {
+            new Article { Id = 10, Title = "A10" },
+            new Article { Id = 11, Title = "A11" }
+        };
+        _articleRepositoryMock.Setup(r => r.GetLatestArticlesAsync(2)).ReturnsAsync(articles);
+
+        var result = await _articleService.GetLatestArticlesAsync(2);
+
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.First().Id, Is.EqualTo(10));
+    }
+
+    [Test]
+    public async Task GetLatestArticlesAsync_ReturnsNull_OnRepositoryException()
+    {
+        _articleRepositoryMock.Setup(r => r.GetLatestArticlesAsync(2)).ThrowsAsync(new Exception("DB error"));
+
+        var result = await _articleService.GetLatestArticlesAsync(2);
+
+        Assert.That(result, Is.Null);
+    }
 }

@@ -130,4 +130,26 @@ public class ArticleController(IArticleService articleService, IConfiguration co
             return NotFound("Erreur lors de la récupération de l'image.");
         }
     }
+
+    [HttpGet("latest")]
+    public async Task<IActionResult> GetLatestArticlesAsync()
+    {
+        var articles = await articleService.GetLatestArticlesAsync(2);
+        if (articles == null) return NotFound();
+
+        // Convertir les chemins d'images en URL complètes
+        var articlesList = articles.ToList();
+        foreach (var article in articlesList)
+        {
+            if (!string.IsNullOrWhiteSpace(article.MediaPath))
+            {
+                var request = HttpContext.Request;
+                var baseUrl = $"{request.Scheme}://{request.Host}";
+                var fileName = Path.GetFileName(article.MediaPath);
+                article.MediaPath = $"{baseUrl}/uploads/{fileName}";
+            }
+        }
+
+        return Ok(articlesList);
+    }
 }

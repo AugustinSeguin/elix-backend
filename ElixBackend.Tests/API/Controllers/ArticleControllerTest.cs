@@ -4,6 +4,8 @@ using ElixBackend.API.Controllers;
 using ElixBackend.Business.IService;
 using ElixBackend.Business.DTO;
 using Microsoft.Extensions.Configuration;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace ElixBackend.Tests.API.Controllers;
 
@@ -20,6 +22,12 @@ public class ArticleControllerTest
         _articleServiceMock = new Mock<IArticleService>();
         _configurationMock = new Mock<IConfiguration>();
         _controller = new ArticleController(_articleServiceMock.Object, _configurationMock.Object);
+
+        // Setup HttpContext for URL generation used by MediaPath conversion
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Scheme = "http";
+        httpContext.Request.Host = new HostString("localhost", 5000);
+        _controller.ControllerContext = new ControllerContext { HttpContext = httpContext };
     }
 
     [Test]
@@ -139,5 +147,34 @@ public class ArticleControllerTest
         var result = await _controller.DeleteArticleAsync(7);
 
         Assert.That(result, Is.TypeOf<NoContentResult>());
+    }
+
+    [Test]
+    public async Task GetLatestArticlesAsync_ReturnsOkWithConvertedMediaPath()
+    {
+        var dtos = new List<ArticleDto>
+        {
+            new ArticleDto { Id = 1, Title = "T1", MediaPath = "uploads/img1.jpg" },
+            new ArticleDto { Id = 2, Title = "T2", MediaPath = "uploads/img2.jpg" }
+        };
+        _articleServiceMock.Setup(s => s.GetLatestArticlesAsync(2)).ReturnsAsync(dtos);
+
+        var result = await _controller.GetLatestArticlesAsync();
+
+        Assert.That(result, Is.TypeOf<OkObjectResult>());
+        var ok = (OkObjectResult)result;
+        var returned = ok.Value as IEnumerable<ArticleDto>;
+        Assert.That(returned, Is.Not.Null);
+        Assert.That(returned!.First().MediaPath, Does.StartWith("http://localhost"));
+    }
+
+    [Test]
+    public async Task GetLatestArticlesAsync_ReturnsNotFound_WhenServiceReturnsNull()
+    {
+        _articleServiceMock.Setup(s => s.GetLatestArticlesAsync(2)).ReturnsAsync((IEnumerable<ArticleDto>?)null);
+
+        var result = await _controller.GetLatestArticlesAsync();
+
+        Assert.That(result, Is.TypeOf<NotFoundResult>());
     }
 }

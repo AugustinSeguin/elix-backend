@@ -1,8 +1,8 @@
 @baseUrl = http://localhost:5059
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI0Iiwicm9sZSI6ImFkbWluIiwianRpIjoiMjIxMzI1ZGMtMTRlYy00NDJhLTk4YjQtOTk1M2I1YTE5M2MzIiwibmJmIjoxNzY3MDEwNDM3LCJleHAiOjE3NjcwMTc2MzcsImlhdCI6MTc2NzAxMDQzN30.oo9UbCKwC9Pz4kJ2xf_p6SNEOCV3Ng9-RZdtIhoRnzU
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiIzIiwicm9sZSI6ImFkbWluIiwianRpIjoiYzI1YjQyZmEtMDQ0Yi00NGI3LTliNTktNTI4MTZmM2I1YmQ5IiwibmJmIjoxNzcwMzcyNjQ2LCJleHAiOjE3NzAzNzk4NDYsImlhdCI6MTc3MDM3MjY0Nn0.dpUOFfCDXfH9M8qbbvEUjEAlyJsJJYwHcQ5Aq5K9GqE
 
 ### Start a quiz
-GET {{baseUrl}}/api/Quiz/StartQuiz?userId=1&categoryId=4
+GET {{baseUrl}}/api/Quiz/StartQuiz?userId=1&categoryId=1
 Authorization: Bearer {{token}}
 Accept: application/json
 

@@ -12,6 +12,8 @@ public interface IArticleService
 
     Task<IEnumerable<ArticleDto>?> GetArticlesByCategoryAsync(int categoryId);
 
+    Task<IEnumerable<ArticleDto>?> GetLatestArticlesAsync(int count);
+
     Task<ArticleDto?> UpdateArticleAsync(ArticleDto articleDto);
 
     Task<bool?> DeleteArticleAsync(int id);

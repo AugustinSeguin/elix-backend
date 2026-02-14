@@ -14,6 +14,8 @@ public interface IArticleRepository
 
     Task<IEnumerable<Article>> GetArticlesByCategoryAsync(int categoryId);
 
+    Task<IEnumerable<Article>> GetLatestArticlesAsync(int count);
+
     Task<Article> UpdateArticleAsync(Article article);
 
     Task DeleteArticleAsync(int id);

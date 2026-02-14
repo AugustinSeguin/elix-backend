@@ -117,4 +117,31 @@ public class ArticleRepositoryTest
         var found = await _repository.GetArticleByIdAsync(1);
         Assert.That(found, Is.Null);
     }
+
+    // --- Tests ajoutés pour GetLatestArticlesAsync
+    [Test]
+    public async Task GetLatestArticlesAsync_ReturnsTwoMostRecent()
+    {
+        var articles = new List<Article>
+        {
+            new Article { Title = "Old", Id = 1 },
+            new Article { Title = "Mid", Id = 2 },
+            new Article { Title = "New", Id = 3 }
+        };
+        _context.Articles.AddRange(articles);
+        await _context.SaveChangesAsync();
+
+        var result = await _repository.GetLatestArticlesAsync(2);
+
+        Assert.That(result.Count(), Is.EqualTo(2));
+        Assert.That(result.First().Id, Is.EqualTo(3));
+        Assert.That(result.ElementAt(1).Id, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task GetLatestArticlesAsync_ReturnsEmpty_WhenNoArticles()
+    {
+        var result = await _repository.GetLatestArticlesAsync(2);
+        Assert.That(result.Any(), Is.False);
+    }
 }
