@@ -52,8 +52,7 @@ public static class Program
             builder.Configuration.AddConfiguration(configuration);
             builder.Logging.ClearProviders();
             builder.Host.UseSerilog(Log.Logger);
-
-            // --- CONFIGURATION CORS CORRIGÉE ---
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("WebAppPolicy", policy =>
@@ -72,10 +71,10 @@ public static class Program
                         allowedOrigins.Add(frontEndUrl.TrimEnd('/'));
                     }
 
-                    policy.WithOrigins(allowedOrigins.Distinct().ToArray()) // .Distinct() au cas où
+                    policy.WithOrigins(allowedOrigins.Distinct().ToArray())
                         .AllowAnyMethod()
                         .AllowAnyHeader()
-                        .AllowCredentials();
+                        .WithExposedHeaders("Content-Disposition"); 
                 });
             });
 
