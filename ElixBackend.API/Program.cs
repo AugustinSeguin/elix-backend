@@ -58,23 +58,24 @@ public static class Program
             {
                 options.AddPolicy("WebAppPolicy", policy =>
                 {
-                    // Récupération de l'URL de prod depuis la config
-                    var frontEndUrl = builder.Configuration["FRONTEND_URL"];
-                    
                     var allowedOrigins = new List<string> 
                     { 
                         "https://backoffice.elix.cleanascode.fr",
-                        "http://localhost:5173", // Port par défaut de Vite
-                        "http://localhost:3000"  // Port par défaut de Create-React-App
+                        "https://app.elix.cleanascode.fr",
+                        "http://localhost:5173",
+                        "http://localhost:3000" 
                     };
 
+                    var frontEndUrl = builder.Configuration["FRONTEND_URL"];
                     if (!string.IsNullOrEmpty(frontEndUrl))
-                        allowedOrigins.Add(frontEndUrl);
+                    {
+                        allowedOrigins.Add(frontEndUrl.TrimEnd('/'));
+                    }
 
-                    policy.WithOrigins(allowedOrigins.ToArray())
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .AllowCredentials(); // Nécessaire si vous envoyez des cookies ou l'Auth header dans certains cas
+                    policy.WithOrigins(allowedOrigins.Distinct().ToArray()) // .Distinct() au cas où
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 });
             });
 
