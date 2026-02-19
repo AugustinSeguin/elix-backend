@@ -32,7 +32,7 @@ public class UserController(
     {
         try
         {
-            var userDto = await userService.GetUserByEmailAsync(loginRequestDto.Email);
+            var userDto = await userService.GetUserByEmailAsync(loginRequestDto.Email, includePassword: true);
             if (userDto == null)
             {
                 ModelState.AddModelError(string.Empty, "Email ou mot de passe invalide.");
@@ -212,7 +212,7 @@ public class UserController(
 
         var isPremiumValue = Request.Form["IsPremium"].ToString();
         userDto.IsPremium = isPremiumValue.Contains("true");
-        
+
         try
         {
             await userService.UpdateUserAsync(userDto);

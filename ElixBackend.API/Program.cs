@@ -82,7 +82,6 @@ public static class Program
             builder.Services.AddSwaggerGen();
             builder.Services.AddControllers();
 
-            // ... (Le reste de vos injections de services : DbContext, Auth, Repositories reste inchangé)
             builder.Services.AddDbContext<ElixDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 

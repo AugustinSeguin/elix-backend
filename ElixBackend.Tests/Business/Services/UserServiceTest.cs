@@ -3,6 +3,7 @@ using ElixBackend.Business.IService;
 using ElixBackend.Business.Service;
 using ElixBackend.Domain.Entities;
 using ElixBackend.Infrastructure.IRepository;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -15,6 +16,7 @@ public class UserServiceTest
     private Mock<IUserPointService> _userPointServiceMock;
     private Mock<ILogger<UserService>> _loggerMock;
     private UserService _userService;
+    private const string ApiBaseUrl = "https://api.example.test";
 
     [SetUp]
     public void SetUp()
@@ -22,7 +24,18 @@ public class UserServiceTest
         _userRepositoryMock = new Mock<IUserRepository>();
         _userPointServiceMock = new Mock<IUserPointService>();
         _loggerMock = new Mock<ILogger<UserService>>();
-        _userService = new UserService(_userRepositoryMock.Object, _userPointServiceMock.Object, _loggerMock.Object);
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ApiBaseUrl"] = ApiBaseUrl
+            })
+            .Build();
+
+        _userService = new UserService(
+            _userRepositoryMock.Object,
+            _userPointServiceMock.Object,
+            _loggerMock.Object,
+            configuration);
     }
 
     [Test]
@@ -78,7 +91,7 @@ public class UserServiceTest
             Lastname = "Wonder",
             Email = "alice@wonder.com",
             Password = "pwd",
-            PasswordRepeated =  "pwd"
+            PasswordRepeated = "pwd"
         };
         var user = new User { Id = 3, Firstname = "Alice", Lastname = "Wonder", Email = "alice@wonder.com", PasswordHash = "hash" };
 
@@ -103,7 +116,7 @@ public class UserServiceTest
             Lastname = "Builder",
             Email = "bob@builder.com",
             Password = "pwd",
-            PasswordRepeated =  "pwd"
+            PasswordRepeated = "pwd"
         };
         var user = new User { Id = 4, Firstname = "Bob", Lastname = "Builder", Email = "bob@builder.com", PasswordHash = "hash" };
 
@@ -145,7 +158,7 @@ public class UserServiceTest
         Assert.That(result.Email, Is.EqualTo(user.Email));
         Assert.That(result.Firstname, Is.EqualTo(user.Firstname));
         Assert.That(result.UserPoints, Is.Not.Null);
-        Assert.That(result.BadgeUrl, Is.EqualTo("/beginner.png"));
+        Assert.That(result.BadgeUrl, Is.EqualTo($"{ApiBaseUrl}/beginner.png"));
         _userRepositoryMock.Verify(r => r.GetUserByIdAsync(6), Times.Once);
     }
 
@@ -160,7 +173,7 @@ public class UserServiceTest
         var result = await _userService.GetMeAsync(7);
 
         Assert.That(result, Is.Not.Null);
-        Assert.That(result!.BadgeUrl, Is.EqualTo("/advanced.png"));
+        Assert.That(result!.BadgeUrl, Is.EqualTo($"{ApiBaseUrl}/advanced.png"));
     }
 
     [Test]

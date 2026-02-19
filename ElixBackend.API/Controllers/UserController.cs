@@ -18,7 +18,7 @@ namespace ElixBackend.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
         {
-            var userDto = await userService.GetUserByEmailAsync(loginRequestDto.Email);
+            var userDto = await userService.GetUserByEmailAsync(loginRequestDto.Email, includePassword: true);
             if (userDto == null)
             {
                 return Unauthorized("Email ou mot de passe invalide.");
@@ -26,24 +26,24 @@ namespace ElixBackend.API.Controllers
 
             var passwordHasher = new PasswordHasher<UserDto>();
 
-            var storedHash = userDto.Password; 
+            var storedHash = userDto.Password;
 
             var result = passwordHasher.VerifyHashedPassword(
-                userDto, 
-                storedHash, 
-                loginRequestDto.Password 
+                userDto,
+                storedHash,
+                loginRequestDto.Password
             );
 
             if (result == PasswordVerificationResult.Failed)
             {
                 return Unauthorized("Email ou mot de passe invalide.");
             }
-            
+
             string token;
             string jti;
             var jwtSecretKey = configuration["JwtSettings:SecretKey"];
-            if(userDto.IsAdmin)
-            { 
+            if (userDto.IsAdmin)
+            {
                 token = JwtTokenGenerator.GenerateAdminToken(userDto.Id, jwtSecretKey, out jti);
                 await tokenService.AddTokenAsync(jti, userDto.Id);
                 return Ok(new { token });
@@ -298,10 +298,10 @@ namespace ElixBackend.API.Controllers
             try
             {
                 var uploadsPath = configuration["FileStorage:UploadsPath"] ?? "wwwroot/uploads";
-                var uploadsFolder = Path.IsPathRooted(uploadsPath) 
-                    ? uploadsPath 
+                var uploadsFolder = Path.IsPathRooted(uploadsPath)
+                    ? uploadsPath
                     : Path.Combine(Directory.GetCurrentDirectory(), uploadsPath);
-                
+
                 var filePath = Path.Combine(uploadsFolder, fileName);
 
                 if (!System.IO.File.Exists(filePath))

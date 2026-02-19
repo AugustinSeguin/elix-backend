@@ -65,7 +65,7 @@ public class UserControllerTest
     {
         // Arrange
         var loginRequest = new LoginRequestDto { Email = "notfound@test.com", Password = "password" };
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((UserDto?)null);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email, true)).ReturnsAsync((UserDto?)null);
 
         // Act
         var result = await _controller.Login(loginRequest) as ViewResult;
@@ -92,7 +92,7 @@ public class UserControllerTest
             Password = passwordHasher.HashPassword(null, "correctpassword"),
             PasswordRepeated = ""
         };
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(userDto);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email, true)).ReturnsAsync(userDto);
 
         // Act
         var result = await _controller.Login(loginRequest) as ViewResult;
@@ -179,7 +179,7 @@ public class UserControllerTest
             Firstname = "New",
             Lastname = "User"
         };
-        
+
         // Mock Request.Form pour les checkboxes
         var formCollection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
         {
@@ -188,7 +188,7 @@ public class UserControllerTest
         });
         _controller.ControllerContext.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
         _controller.ControllerContext.HttpContext.Request.Form = formCollection;
-        
+
         _userServiceMock.Setup(s => s.AddUserAsync(It.IsAny<UserDto>()))
             .ReturnsAsync(new UserDto { Id = 1, Username = "newuser", Email = "new@test.com", Firstname = "New", Lastname = "User", Password = "hashed", PasswordRepeated = "hashed" });
 
@@ -214,7 +214,7 @@ public class UserControllerTest
             Firstname = "New",
             Lastname = "User"
         };
-        
+
         // Mock Request.Form pour les checkboxes
         var formCollection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
         {
@@ -223,7 +223,7 @@ public class UserControllerTest
         });
         _controller.ControllerContext.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
         _controller.ControllerContext.HttpContext.Request.Form = formCollection;
-        
+
         _controller.ModelState.AddModelError("Username", "Le nom d'utilisateur est requis");
 
         // Act
@@ -248,7 +248,7 @@ public class UserControllerTest
             Firstname = "New",
             Lastname = "User"
         };
-        
+
         // Mock Request.Form pour les checkboxes
         var formCollection = new FormCollection(new Dictionary<string, Microsoft.Extensions.Primitives.StringValues>
         {
@@ -257,7 +257,7 @@ public class UserControllerTest
         });
         _controller.ControllerContext.HttpContext.Request.ContentType = "application/x-www-form-urlencoded";
         _controller.ControllerContext.HttpContext.Request.Form = formCollection;
-        
+
         _userServiceMock.Setup(s => s.AddUserAsync(It.IsAny<UserDto>())).ThrowsAsync(new Exception("Database error"));
 
         // Act

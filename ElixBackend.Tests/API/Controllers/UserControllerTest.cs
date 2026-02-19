@@ -38,7 +38,7 @@ public class UserControllerTest
     {
         var controller = CreateController();
         var loginRequest = new LoginRequestDto { Email = "notfound@test.com", Password = "pass" };
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync((UserDto?)null);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email, true)).ReturnsAsync((UserDto?)null);
 
         var result = await controller.Login(loginRequest);
 
@@ -63,7 +63,7 @@ public class UserControllerTest
         userDto.Password = passwordHasher.HashPassword(userDto, "good");
         userDto.PasswordRepeated = userDto.Password;
 
-        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email)).ReturnsAsync(userDto);
+        _userServiceMock.Setup(s => s.GetUserByEmailAsync(loginRequest.Email, true)).ReturnsAsync(userDto);
 
         var result = await controller.Login(loginRequest);
 
